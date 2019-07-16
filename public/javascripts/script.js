@@ -3,7 +3,9 @@
 const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
 let mapW = 20, mapH = 20;
-
+let player;
+let players = [];
+let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
 
@@ -15,21 +17,29 @@ const keysDown = {
 }
 
 class Character {
-   constructor() {
-       this.tileFrom    = [1, 1];   // where player come from [row, col]
-       this.tileTo      = [1, 1];   // where player is going [row, col]
-       this.timeMoved   = 0;        // when movment started
-       this.dimentsions = [30, 30]; // size of character [width, height]
-       this.position    = [45, 45]; // position in [x, y] relative to top-left corner
-       this.deleyMove   = 400;      // how long it take to move 1 tile in ml
+   constructor(row, col) {
+       this.tileFrom    = [row, col];   // where player come from [row, col]
+       this.tileTo      = [row, col];   // where player is going [row, col]
+       this.timeMoved   = 0;            // when movment started
+       this.dimentsions = [30, 30];     // size of character [width, height]
+       this.position    = [this.calcPosition(row, col)[0], this.calcPosition(row, col)[1]];     // position in [x, y] relative to top-left corner
+       this.deleyMove   = 400;          // how long it take to move 1 tile in ml
    } 
 
-   placeAt(x, y) {
-        this.tileFrom = [x, y];
-        this.tileTo   = [x, y];
+
+   calcPosition(row, col) {
+        return  [
+            row * tileW + (tileW - this.dimentsions[0]) / 2,
+            col * tileH + (tileH - this.dimentsions[1]) / 2
+        ]
+   }
+
+   placeAt(row, col) {
+        this.tileFrom = [row, col];
+        this.tileTo   = [row, col];
         this.position = [
-            (x * tileW) + ((tileW - this.dimentsions[0]) / 2), 
-            (y * tileH) + ((tileH - this.dimentsions[1]) / 2)
+            (row * tileW) + ((tileW - this.dimentsions[0]) / 2), 
+            (col * tileH) + ((tileH - this.dimentsions[1]) / 2)
         ];
    }
 
@@ -106,7 +116,7 @@ function toIndex(row, col) {
 }
 
 
-const player = new Character()
+
 
 let gameMap = [
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -242,6 +252,23 @@ function drawGame() {
     /**
      ** Drawing player
      */
+
+
+
+
+    for (const key in players) {
+        if (key !== socket.id) {
+        
+            ctx.fillStyle = players[key].color;
+            ctx.fillRect(
+                viewport.offset[0] + players[key].position[0], 
+                viewport.offset[1] + players[key].position[1], 
+                player.dimentsions[0], 
+                player.dimentsions[1]
+            );
+        }
+     }
+
     ctx.fillStyle = "#0000ff";
     ctx.fillRect(
         viewport.offset[0] + player.position[0], 
@@ -250,29 +277,65 @@ function drawGame() {
         player.dimentsions[1]
     );
 
+
+
+    socket.emit("move", { position:player.position, id:socket.id });
+
     ctx.fillStyle = "#ff0000"
     ctx.fillText("FPS:" + framesLastSecond, 10, 20);
     lastFrameTime = currentFrameTime;
     requestAnimationFrame(drawGame);
 }
 
+function randomSpawn() {
+    return [Math.ceil(Math.random() * 18), Math.ceil(Math.random() * 18)]
+}
+
+function randomColor() {
+    return '#'+Math.floor(Math.random()*16777215).toString(16);
+}
+
 (function() {
+
+    let rowCol = randomSpawn()
+    let row = rowCol[0];
+    let col = rowCol[1]
+
+    while (gameMap[toIndex(row, col)] !== 1) {
+        rowCol = randomSpawn()
+        row = randomSpawn()[0];
+        col = randomSpawn()[1]
+    }
+
+    // new player init
+    player = new Character(row, col)
+    socket = io.connect("http://localhost:3000");
+
+    socket.emit("start", { position:player.position, id:socket.id });
+
+    socket.on("heartbeat", data => {
+        players = data;
+    });
+
+
     window.addEventListener("keydown", e => {
         if (e.keyCode >= 37 && e.keyCode <= 40) {
             keysDown[e.keyCode] = true
             
         }
-    })
+    });
+
     window.addEventListener("keyup", e => {
         if (e.keyCode >= 37 && e.keyCode <= 40) {
             keysDown[e.keyCode] = false
         }
-    })
+    });
+
 
     viewport.screen = [
         document.getElementById("canvas").width,
         document.getElementById("canvas").height,
-    ]
+    ];
 
     requestAnimationFrame(drawGame);
     ctx.font = "bold 14pt sans-sarif";

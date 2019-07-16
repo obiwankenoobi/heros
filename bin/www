@@ -4,9 +4,17 @@
  * Module dependencies.
  */
 
+const players = {}
+
+function Player(id, position, color) {
+  this.id = id;
+  this.position = position;
+  this.color = color;
+}
 var app = require('../app');
-var debug = require('debug')('server:server');
+var debug = require('debug')('heros:server');
 var http = require('http');
+
 
 /**
  * Get port from environment and store in Express.
@@ -20,6 +28,41 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require('socket.io')(server);
+
+
+function randomColor() {
+  return '#'+Math.floor(Math.random()*16777215).toString(16);
+}
+
+
+setInterval(() => io.sockets.emit("heartbeat", players), 1000 / 60)
+
+io.on('connection', socket => {
+
+
+  //heartBeat(socket);
+
+  socket.on("start", data => {
+    const player = new Player(socket.id, data.position, randomColor())
+    players[socket.id] = player
+  });
+
+  socket.on("move", data => {
+    if (players[data.id]) {
+      players[data.id].position = data.position
+      
+    }
+    //socket.broadcast.emit("move", players)
+  });
+
+  socket.on('disconnect', () => {
+    delete players[socket.id]
+  });
+
+
+});
+
 
 /**
  * Listen on provided port, on all network interfaces.
