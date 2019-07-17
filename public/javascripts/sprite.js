@@ -43,33 +43,19 @@ class Sprite {
         };
     }
 
-    run(x, y, animationName) {
-        this.ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    run(x, y, animationName, stop = false) {
         const now = new Date().getTime()
         const anim = this.animations[animationName]
    
         const { xStart, yStart } = anim.frames[this.next];
-        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y, this.frameWidth, this.frameHeight );
-
-        if (now - this.last >= anim.duration) {
-            this.next++;
-            this.last = new Date().getTime()
-            if (this.next >= anim.frames.length) { this.next = 0; }
+        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
+        if (!stop) {
+            if (now - this.last >= anim.duration) {
+                this.next++;
+                this.last = new Date().getTime()
+                if (this.next >= anim.frames.length) { this.next = 0; }
+            }
         }
     }
 }
 
-const ctx1 = document.getElementById("canvas1").getContext("2d");
-const hero = new Sprite("../images/spritexb-2471.png", 4, 4);
-hero.load(ctx1);
-hero.animate("walkRight", 200, 0);
-const start = new Date().getTime()
-
-
-
-function run() {
-    hero.run(0,0,"walkRight")
-    requestAnimationFrame(run);
-}
-
-run()

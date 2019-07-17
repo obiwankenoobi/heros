@@ -8,7 +8,9 @@ let players = [];
 let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
-
+let hero;
+let direction;
+let lastDirection = "40";
 const keysDown = {
     37: false, 
     38: false,
@@ -21,7 +23,7 @@ class Character {
        this.tileFrom    = [row, col];   // where player come from [row, col]
        this.tileTo      = [row, col];   // where player is going [row, col]
        this.timeMoved   = 0;            // when movment started
-       this.dimentsions = [30, 30];     // size of character [width, height]
+       this.dimentsions = [32, 32];     // size of character [width, height]
        this.position    = [this.calcPosition(row, col)[0], this.calcPosition(row, col)[1]];     // position in [x, y] relative to top-left corner
        this.deleyMove   = 400;          // how long it take to move 1 tile in ml
    } 
@@ -58,6 +60,7 @@ class Character {
              ** is greater than the deley we set, if so it means the charecter is arrived 
              ** to it's destination.
              */
+            direction = null;
             this.placeAt(this.tileTo[0], this.tileTo[1])
 
         } else {
@@ -197,16 +200,19 @@ function drawGame() {
     if (!player.processMovment(currentFrameTime)) {
         // based on the key pressed set the new [row, col] values
         if (keysDown[38] && player.tileFrom[1] > 0 && gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] - 1)] === 1) {
+            // up
             player.tileTo[1] -= 1;
         } 
         else if (keysDown[40] && player.tileFrom[1] < mapH - 1 && gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] + 1)] === 1) {
-        
+            // down
             player.tileTo[1] += 1;
         } 
         else if (keysDown[37] && player.tileFrom[0] > 0 && gameMap[toIndex(player.tileFrom[0] - 1, player.tileFrom[1])] === 1) {
+            // right
             player.tileTo[0] -= 1;
         } 
         else if (keysDown[39] && player.tileFrom[0] < mapW - 1 && gameMap[toIndex(player.tileFrom[0] + 1, player.tileFrom[1])] === 1) {
+            // left
             player.tileTo[0] += 1;
         }
 
@@ -270,12 +276,35 @@ function drawGame() {
      }
 
     ctx.fillStyle = "#0000ff";
-    ctx.fillRect(
-        viewport.offset[0] + player.position[0], 
-        viewport.offset[1] + player.position[1], 
-        player.dimentsions[0], 
-        player.dimentsions[1]
-    );
+    ctx.beginPath()
+    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions)
+    switch(direction) {
+        case 37:
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37")
+            break;
+
+        case 38:
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"38")
+            break;
+
+        case 39:
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"39")
+            break;
+
+        case 40:
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"40")
+            break;
+
+        default:
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true)
+    }
+    ctx.closePath();
+    // ctx.fillRect(
+    //     viewport.offset[0] + player.position[0], 
+    //     viewport.offset[1] + player.position[1], 
+    //     player.dimentsions[0], 
+    //     player.dimentsions[1]
+    // );
 
 
 
@@ -299,7 +328,7 @@ function randomColor() {
 
     let rowCol = randomSpawn()
     let row = rowCol[0];
-    let col = rowCol[1]
+    let col = rowCol[1];
 
     while (gameMap[toIndex(row, col)] !== 1) {
         rowCol = randomSpawn()
@@ -311,6 +340,14 @@ function randomColor() {
     player = new Character(row, col)
     socket = io.connect("http://localhost:3000");
 
+    hero = new Sprite("../images/spritexb-2471.png", 4, 4);
+    hero.load(ctx);
+    hero.animate("40", 200, 0);
+    hero.animate("37", 200, 1);
+    hero.animate("39", 200, 2);
+    hero.animate("38", 200, 3);
+
+
     socket.emit("start", { position:player.position, id:socket.id });
 
     socket.on("heartbeat", data => {
@@ -320,14 +357,16 @@ function randomColor() {
 
     window.addEventListener("keydown", e => {
         if (e.keyCode >= 37 && e.keyCode <= 40) {
-            keysDown[e.keyCode] = true
-            
+            keysDown[e.keyCode] = true;
+            direction = e.keyCode;
+            lastDirection = e.keyCode.toString();
         }
     });
 
     window.addEventListener("keyup", e => {
         if (e.keyCode >= 37 && e.keyCode <= 40) {
-            keysDown[e.keyCode] = false
+            keysDown[e.keyCode] = false;
+
         }
     });
 
