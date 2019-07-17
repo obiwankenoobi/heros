@@ -11,7 +11,7 @@ class Sprite {
         this.frameWidth = null;
         this.ctx = null;
         this.next = 0;
-        this.last = 0
+        this.lastFrameTime = 0
     }
 
     load(ctx) {
@@ -50,9 +50,9 @@ class Sprite {
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
         if (!stop) {
-            if (now - this.last >= anim.duration) {
+            if (now - this.lastFrameTime >= anim.duration) {
                 this.next++;
-                this.last = new Date().getTime();
+                this.lastFrameTime = new Date().getTime();
                 if (this.next >= anim.frames.length) { this.next = 0; }
             }
         }
