@@ -9,8 +9,17 @@ let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
 let hero;
-let direction;
+let direction = "40";
 let lastDirection = "40";
+let heros = []
+let characterIdx;
+let characters= [
+    "../images/spritexb-1.png",
+    "../images/spritexb-2.png",
+    "../images/spritexb-3.png",
+    "../images/spritexb-4.png",
+    "../images/spritexb-5.png",
+]
 const keysDown = {
     37: false, 
     38: false,
@@ -255,60 +264,82 @@ function drawGame() {
         }
     }
 
+
+
+
+
     /**
-     ** Drawing player
+     ** Drawing online players
      */
-
-
-
-
     for (const key in players) {
         if (key !== socket.id) {
+
+
+            ctx.beginPath()
+            ctx.rect(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1], player.dimentsions, player.dimentsions);
+
+            const { hero } = heros[players[key].characterState.characterIdx];
+            const { characterState } = players[key];
+            console.log(hero);
+            console.log(characterState);
+            switch(characterState.direction) {
+                case 37:
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"37");
+                    break;
         
-            ctx.fillStyle = players[key].color;
-            ctx.fillRect(
-                viewport.offset[0] + players[key].position[0], 
-                viewport.offset[1] + players[key].position[1], 
-                player.dimentsions[0], 
-                player.dimentsions[1]
-            );
+                case 38:;
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"38");
+                    break;;
+        
+                case 39:
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"39");
+                    break;
+        
+                case 40:
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"40");
+                    break;
+        
+                default:
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true);
+            }
+            ctx.closePath();
+
         }
      }
 
-    ctx.fillStyle = "#0000ff";
-    ctx.beginPath()
-    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions)
+
+    /**
+     ** Drawing player
+     */
+    ctx.beginPath();
+    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
+    const { hero } = heros[characterIdx]
     switch(direction) {
         case 37:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37")
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37");
             break;
 
         case 38:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"38")
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"38");
             break;
 
         case 39:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"39")
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"39");
             break;
 
         case 40:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"40")
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"40");
             break;
 
         default:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true)
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
     }
     ctx.closePath();
-    // ctx.fillRect(
-    //     viewport.offset[0] + player.position[0], 
-    //     viewport.offset[1] + player.position[1], 
-    //     player.dimentsions[0], 
-    //     player.dimentsions[1]
-    // );
 
 
 
-    socket.emit("move", { position:player.position, id:socket.id });
+
+    socket.emit("move", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx }  });
 
     ctx.fillStyle = "#ff0000"
     ctx.fillText("FPS:" + framesLastSecond, 10, 20);
@@ -340,15 +371,22 @@ function randomColor() {
     player = new Character(row, col)
     socket = io.connect("http://localhost:3000");
 
-    hero = new Sprite("../images/spritexb-2471.png", 4, 4);
-    hero.load(ctx);
-    hero.animate("40", 200, 0);
-    hero.animate("37", 200, 1);
-    hero.animate("39", 200, 2);
-    hero.animate("38", 200, 3);
+
+    characterIdx = Math.floor(Math.random() * 5).toString();
+
+    for (let idx = 0; idx < characters.length; idx++) {
+        let hero;
+        hero = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        hero.load(ctx);
+        hero.animate("40", 100, 0); // down
+        hero.animate("37", 100, 1); // right 
+        hero.animate("39", 100, 2); // left 
+        hero.animate("38", 100, 3); // up
+        heros.push({ hero, direction, lastDirection })
+    }
 
 
-    socket.emit("start", { position:player.position, id:socket.id });
+    socket.emit("start", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx } });
 
     socket.on("heartbeat", data => {
         players = data;

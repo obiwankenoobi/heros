@@ -52,7 +52,7 @@ class Sprite {
         if (!stop) {
             if (now - this.last >= anim.duration) {
                 this.next++;
-                this.last = new Date().getTime()
+                this.last = new Date().getTime();
                 if (this.next >= anim.frames.length) { this.next = 0; }
             }
         }

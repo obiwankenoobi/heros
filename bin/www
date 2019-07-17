@@ -6,10 +6,10 @@
 
 const players = {}
 
-function Player(id, position, color) {
+function Player(id, position, characterState) {
   this.id = id;
   this.position = position;
-  this.color = color;
+  this.characterState = characterState;
 }
 var app = require('../app');
 var debug = require('debug')('heros:server');
@@ -44,14 +44,15 @@ io.on('connection', socket => {
   //heartBeat(socket);
 
   socket.on("start", data => {
-    const player = new Player(socket.id, data.position, randomColor())
+    const player = new Player(socket.id, data.position, data.characterState)
     players[socket.id] = player
+    console.log("players", players)
   });
 
   socket.on("move", data => {
     if (players[data.id]) {
       players[data.id].position = data.position
-      
+      players[data.id].characterState = data.characterState
     }
     //socket.broadcast.emit("move", players)
   });
