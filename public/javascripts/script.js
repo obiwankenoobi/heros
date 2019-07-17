@@ -15,6 +15,7 @@ let lastDirection = "40";
 let heros = []
 let herosOnline = []
 let characterIdx;
+
 let characters= [
     "../images/spritexb-1.png",
     "../images/spritexb-2.png",
@@ -132,26 +133,26 @@ function toIndex(row, col) {
 
 
 
-let gameMap = [
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0,
-	0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0,
-	0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0,
-	0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
-	0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
-	0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0,
-	0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-	0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-	0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
-	0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
-	0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0,
-	0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+const gameMap = [
+	0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 2, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 1, 4, 4, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 0,
+	0, 2, 3, 1, 1, 4, 4, 1, 2, 3, 3, 2, 1, 1, 2, 1, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 1, 0,
+	0, 1, 1, 1, 1, 2, 3, 2, 1, 1, 4, 1, 1, 1, 1, 3, 3, 2, 1, 0,
+	0, 1, 2, 2, 2, 2, 1, 2, 1, 1, 4, 1, 1, 1, 1, 1, 3, 2, 1, 0,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0,
+	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 3, 2, 3, 4, 1, 3, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
+	0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 4, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ];
 
@@ -160,6 +161,12 @@ function drawGame() {
     const sec = Math.floor(Date.now() / 1000); // counting seconds
     const currentFrameTime = Date.now();
     const timeElapsed = currentFrameTime - lastFrameTime;
+    let safeAreas = {
+        1: true,
+        2: true,
+        3: true,
+        4: false
+    };
 
     if (sec !== currentSecond) { 
         currentSecond = sec; 
@@ -172,21 +179,41 @@ function drawGame() {
     // if we not moving now
     if (!player.processMovment(currentFrameTime)) {
         // based on the key pressed set the new [row, col] values
-        if (keysDown[38] && player.tileFrom[1] > 0 && gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] - 1)] === 1) {
-            // up
-            player.tileTo[1] -= 1;
+        if (keysDown[38] && player.tileFrom[1] > 0) {
+            if (safeAreas[gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] - 1)]]) {
+                // up
+                player.tileTo[1] -= 1;
+            } else {
+                direction = null;
+            }
+
         } 
-        else if (keysDown[40] && player.tileFrom[1] < mapH - 1 && gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] + 1)] === 1) {
-            // down
-            player.tileTo[1] += 1;
+
+        else if (keysDown[40] && player.tileFrom[1] < mapH - 1) {
+            if (safeAreas[gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] + 1)]]) {
+                // down
+                player.tileTo[1] += 1;
+            } else {
+                direction = null;
+            }
         } 
-        else if (keysDown[37] && player.tileFrom[0] > 0 && gameMap[toIndex(player.tileFrom[0] - 1, player.tileFrom[1])] === 1) {
-            // right
-            player.tileTo[0] -= 1;
+
+        else if (keysDown[37] && player.tileFrom[0] > 0) {
+            if (safeAreas[gameMap[toIndex(player.tileFrom[0] - 1, player.tileFrom[1])]]) {
+                // right
+                player.tileTo[0] -= 1;
+            } else {
+                direction = null;
+            }
         } 
-        else if (keysDown[39] && player.tileFrom[0] < mapW - 1 && gameMap[toIndex(player.tileFrom[0] + 1, player.tileFrom[1])] === 1) {
-            // left
-            player.tileTo[0] += 1;
+
+        else if (keysDown[39] && player.tileFrom[0] < mapW - 1) {
+            if (safeAreas[gameMap[toIndex(player.tileFrom[0] + 1, player.tileFrom[1])]]) {
+                // left
+                player.tileTo[0] += 1;
+            } else {
+                direction = null;
+            }
         }
 
         // update the {timeMoved} with the current timestemp
@@ -211,10 +238,22 @@ function drawGame() {
         for (let x = viewport.startTile[0]; x <= viewport.endTile[0]; x++) {
             switch(gameMap[((y*mapW) + x)]) {
                 case 0: 
-                    ctx.fillStyle = "#999"
+                    ctx.fillStyle = "#999";
+                    break;
+                case 1:
+                    ctx.fillStyle = "#99cc99";
+                    break;
+                case 3: 
+                    ctx.fillStyle = "#3C583B";
+                    break;
+                case 2:
+                    ctx.fillStyle = "#ffdb99";
+                    break;
+                case 4:
+                    ctx.fillStyle = "#7fbfff";
                     break;
                 default: 
-                    ctx.fillStyle = "#eee"
+                    ctx.fillStyle = "#eee";
             } 
             /**
              ** Drawing tiles
@@ -251,7 +290,7 @@ function drawGame() {
         
                 case 38:;
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"38");
-                    break;;
+                    break;
         
                 case 39:
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"39");
@@ -277,6 +316,7 @@ function drawGame() {
     ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
     const { hero } = heros[characterIdx];
     switch(direction) {
+        
         case 37:
             hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37");
             break;
