@@ -2,6 +2,7 @@
 
 const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
+const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20;
 let player;
 let players = [];
@@ -12,6 +13,7 @@ let hero;
 let direction = "40";
 let lastDirection = "40";
 let heros = []
+let herosOnline = []
 let characterIdx;
 let characters= [
     "../images/spritexb-1.png",
@@ -153,44 +155,6 @@ let gameMap = [
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ];
 
-const viewport = {
-    screen     : [0,0], // canvas [width, height]
-    startTile  : [0,0], // [row, col] of the starting tile to show
-    endTile    : [0,0], // [row, col] of the ending tile to show
-    offset     : [0,0], // offset to move [x, y]
-    update     : function (px, py) {
-
-        /**
-         ** Formula to calculate the offset from the current position
-         */
-        this.offset[0] = Math.floor((this.screen[0] / 2) - px);
-        this.offset[1] = Math.floor((this.screen[1] / 2) - py);
-
-        /**
-         ** Calculating the index position of the tile falling under the dead center of the camera position
-         */
-        const tile = [
-            Math.floor(px / tileW),
-            Math.floor(py / tileH)
-        ];
-
-        /**
-         ** Formula to calculate the starting index to draw and the end index to draw
-         */
-        this.startTile[0] = tile[0] - 1 - Math.ceil((this.screen[0] / 2) / tileW);
-        this.startTile[1] = tile[1] - 1 - Math.ceil((this.screen[1] / 2) / tileH);
-
-        if (this.startTile[0] < 0) { this.startTile[0] = 0; }
-        if (this.startTile[1] < 0) { this.startTile[1] = 0; }
-
-        this.endTile[0] = tile[0] + 1 + Math.ceil((this.screen[0] / 2) / tileW)
-        this.endTile[1] = tile[1] + 1 + Math.ceil((this.screen[1] / 2) / tileH)
-
-        if (this.endTile[0] >= 0) { this.endTile[0] = mapW - 1; }
-        if (this.endTile[1] >= 0) { this.endTile[1] = mapH - 1; }
-
-    }
-}
 
 function drawGame() {
     const sec = Math.floor(Date.now() / 1000); // counting seconds
@@ -274,14 +238,12 @@ function drawGame() {
     for (const key in players) {
         if (key !== socket.id) {
 
-
             ctx.beginPath()
             ctx.rect(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1], player.dimentsions, player.dimentsions);
 
-            const { hero } = heros[players[key].characterState.characterIdx];
+            const { hero } = herosOnline[players[key].characterState.characterIdx];
             const { characterState } = players[key];
-            console.log(hero);
-            console.log(characterState);
+
             switch(characterState.direction) {
                 case 37:
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"37");
@@ -313,7 +275,7 @@ function drawGame() {
      */
     ctx.beginPath();
     ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
-    const { hero } = heros[characterIdx]
+    const { hero } = heros[characterIdx];
     switch(direction) {
         case 37:
             hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37");
@@ -336,10 +298,14 @@ function drawGame() {
     }
     ctx.closePath();
 
-
-
-
-    socket.emit("move", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx }  });
+    socket.emit("move", { 
+        position: player.position, 
+        id: socket.id, 
+        characterState: { 
+            direction, lastDirection, 
+            characterIdx 
+        }  
+    });
 
     ctx.fillStyle = "#ff0000"
     ctx.fillText("FPS:" + framesLastSecond, 10, 20);
@@ -374,6 +340,9 @@ function randomColor() {
 
     characterIdx = Math.floor(Math.random() * 5).toString();
 
+    /**
+     ** Initial all images for my player
+     */
     for (let idx = 0; idx < characters.length; idx++) {
         let hero;
         hero = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
@@ -382,7 +351,21 @@ function randomColor() {
         hero.animate("37", 100, 1); // right 
         hero.animate("39", 100, 2); // left 
         hero.animate("38", 100, 3); // up
-        heros.push({ hero, direction, lastDirection })
+        heros.push({ hero, direction, lastDirection });
+    }
+
+    /**
+     ** Initial all images for online players
+     */
+    for (let idx = 0; idx < characters.length; idx++) {
+        let hero;
+        hero = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        hero.load(ctx);
+        hero.animate("40", 100, 0); // down
+        hero.animate("37", 100, 1); // right 
+        hero.animate("39", 100, 2); // left 
+        hero.animate("38", 100, 3); // up
+        herosOnline.push({ hero, direction, lastDirection });
     }
 
 

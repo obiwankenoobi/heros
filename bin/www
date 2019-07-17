@@ -40,19 +40,16 @@ setInterval(() => io.sockets.emit("heartbeat", players), 1000 / 60)
 
 io.on('connection', socket => {
 
-
-  //heartBeat(socket);
-
   socket.on("start", data => {
-    const player = new Player(socket.id, data.position, data.characterState)
-    players[socket.id] = player
-    console.log("players", players)
+    const player = new Player(socket.id, data.position, data.characterState);
+    players[socket.id] = player;
+    console.log("players", players);
   });
 
   socket.on("move", data => {
     if (players[data.id]) {
-      players[data.id].position = data.position
-      players[data.id].characterState = data.characterState
+      players[data.id].position = data.position;
+      players[data.id].characterState = data.characterState;
     }
     //socket.broadcast.emit("move", players)
   });
