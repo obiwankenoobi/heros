@@ -4,6 +4,7 @@ const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
 const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20;
+const powersKeys = {69:true, 82:true, 84:true}
 let player;
 let players = [];
 let socket;
@@ -11,23 +12,34 @@ let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
 let hero;
 let direction = "40";
+let powerInState = null;
 let lastDirection = "40";
-let heros = []
-let herosOnline = []
+let heros = [];
+let herosOnline = [];
+let herosPowers = [];
+let herosPowersOnline = [];
 let characterIdx;
 
-let characters= [
+const characters= [
     "../images/spritexb-1.png",
     "../images/spritexb-2.png",
     "../images/spritexb-3.png",
     "../images/spritexb-4.png",
     "../images/spritexb-5.png",
+];
+const powers = [
+    "../images/power1.png"
 ]
-const keysDown = {
+const directionKeyDown = {
     37: false, 
     38: false,
     39: false,
     40: false
+}
+
+const powersKeyDown = {
+    69: false, 
+    82: false
 }
 
 class Character {
@@ -179,7 +191,7 @@ function drawGame() {
     // if we not moving now
     if (!player.processMovment(currentFrameTime)) {
         // based on the key pressed set the new [row, col] values
-        if (keysDown[38] && player.tileFrom[1] > 0) {
+        if (directionKeyDown[38] && player.tileFrom[1] > 0) {
             if (safeAreas[gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] - 1)]]) {
                 // up
                 player.tileTo[1] -= 1;
@@ -189,7 +201,7 @@ function drawGame() {
 
         } 
 
-        else if (keysDown[40] && player.tileFrom[1] < mapH - 1) {
+        else if (directionKeyDown[40] && player.tileFrom[1] < mapH - 1) {
             if (safeAreas[gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] + 1)]]) {
                 // down
                 player.tileTo[1] += 1;
@@ -198,7 +210,7 @@ function drawGame() {
             }
         } 
 
-        else if (keysDown[37] && player.tileFrom[0] > 0) {
+        else if (directionKeyDown[37] && player.tileFrom[0] > 0) {
             if (safeAreas[gameMap[toIndex(player.tileFrom[0] - 1, player.tileFrom[1])]]) {
                 // right
                 player.tileTo[0] -= 1;
@@ -207,7 +219,7 @@ function drawGame() {
             }
         } 
 
-        else if (keysDown[39] && player.tileFrom[0] < mapW - 1) {
+        else if (directionKeyDown[39] && player.tileFrom[0] < mapW - 1) {
             if (safeAreas[gameMap[toIndex(player.tileFrom[0] + 1, player.tileFrom[1])]]) {
                 // left
                 player.tileTo[0] += 1;
@@ -273,7 +285,7 @@ function drawGame() {
 
     /**
      ** Drawing online players
-     */
+     */    
     for (const key in players) {
         if (key !== socket.id) {
 
@@ -282,6 +294,11 @@ function drawGame() {
 
             const { hero } = herosOnline[players[key].characterState.characterIdx];
             const { characterState } = players[key];
+            const { power } = herosPowersOnline[0];
+            if (characterState.powerInState) {
+                
+                power.run(viewport.offset[0] + players[key].position[0] - 32, viewport.offset[1] + players[key].position[1] - 10, characterState.powerInState);
+            }
 
             switch(characterState.direction) {
                 case 37:
@@ -315,6 +332,16 @@ function drawGame() {
     ctx.beginPath();
     ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
     const { hero } = heros[characterIdx];
+
+    
+    {    
+        const { power } = herosPowers[0];
+        
+        if (powerInState) {
+            power.run(viewport.offset[0] + player.position[0] - 32, viewport.offset[1] + player.position[1] - 10, powerInState);
+        }
+    }
+
     switch(direction) {
         
         case 37:
@@ -342,8 +369,10 @@ function drawGame() {
         position: player.position, 
         id: socket.id, 
         characterState: { 
-            direction, lastDirection, 
-            characterIdx 
+            direction, 
+            lastDirection, 
+            characterIdx,
+            powerInState
         }  
     });
 
@@ -409,26 +438,92 @@ function randomColor() {
     }
 
 
-    socket.emit("start", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx } });
+
+    /**
+     ** Initial all powers for online players
+     */
+    for (let idx = 0; idx < powers.length; idx++) {
+        let power;
+        power = new Sprite("../images/power-" + idx + ".png" , 5, 4);
+        power.load(ctx);
+        power.animate("69", 100, 0); // down
+        power.animate("82", 100, 1); // right 
+        // hero.animate("39", 100, 2); // left 
+        // hero.animate("38", 100, 3); // up
+        herosPowersOnline.push({ power, direction, lastDirection });
+    }
+
+    /**
+     ** Initial all powers for player
+     */
+    for (let idx = 0; idx < powers.length; idx++) {
+        let power;
+        power = new Sprite("../images/power-" + idx + ".png" , 5, 4);
+        power.load(ctx);
+        power.animate("69", 100, 0); // down
+        power.animate("82", 100, 1); // right 
+        // hero.animate("39", 100, 2); // left 
+        // hero.animate("38", 100, 3); // up
+        herosPowers.push({ power, direction, lastDirection });
+    }
+
+
+    socket.emit("start", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx, powerInState } });
 
     socket.on("heartbeat", data => {
         players = data;
     });
 
-
+    
     window.addEventListener("keydown", e => {
+        console.log(e.keyCode)
         if (e.keyCode >= 37 && e.keyCode <= 40) {
-            keysDown[e.keyCode] = true;
+            directionKeyDown[e.keyCode] = true;
             direction = e.keyCode;
             lastDirection = e.keyCode.toString();
+
+            for (const key in directionKeyDown) {
+                if (key !== e.keyCode.toString()) {
+                    directionKeyDown[key] = false;
+                }
+            }
         }
+        if (e.keyCode === 32) {
+            player.deleyMove = 200;
+            for (const key in heros[characterIdx].hero.animations) {
+                heros[characterIdx].hero.animations[key].duration = 50;
+            }
+        }
+
+
+
+        if (powersKeys[e.keyCode]) {
+            for (const key in powersKeyDown) {
+                if (key !== e.keyCode.toString()) { powersKeyDown[key] = false; }
+            }
+            powerInState = e.keyCode.toString();
+            powersKeyDown[e.keyCode] = true;
+        }
+
+
     });
 
     window.addEventListener("keyup", e => {
         if (e.keyCode >= 37 && e.keyCode <= 40) {
-            keysDown[e.keyCode] = false;
-
+            directionKeyDown[e.keyCode] = false;
         }
+        if (e.keyCode === 32) {
+            player.deleyMove = 400;
+            for (const key in heros[characterIdx].hero.animations) {
+                heros[characterIdx].hero.animations[key].duration = 100;
+            }
+        }
+
+        if (powersKeys[e.keyCode]) {
+            powersKeyDown[e.keyCode] = false;
+            powerInState = ""
+        }
+
     });
 
 
