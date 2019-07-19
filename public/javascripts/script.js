@@ -9,7 +9,7 @@ let player;
 //let monster;
 
 let players = [];
-let monsters = []
+let monsters = {};
 let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
@@ -147,6 +147,11 @@ class Character {
    }
 }
 
+function isObjEmpty(obj) {
+    return Object.entries(obj).length === 0 && obj.constructor === Object
+  }
+  
+
 function toIndex(row, col) {
     /**
      ** helper to calculate the index based on the [row, col]
@@ -254,55 +259,105 @@ function drawGame() {
 
 
         // ####################### MONSTER MOVMENT #######################
-        
-        for (let i = 0; i < monsters.length; i++) {
-            const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
-            if (!monster.processMovment(currentFrameTime)) {
-
-                // based on the key pressed set the new [row, col] values
-                if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
-                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
-                        // up
-                        monster.tileTo[1] -= 1;
-                    } else {
-                        monsterDirection = null;
+        for (const i in monsters) {
+            if (monsters.hasOwnProperty(i)) {
+                
+                const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
+                if (!monster.processMovment(currentFrameTime)) {
+    
+                    // based on the key pressed set the new [row, col] values
+                    if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
+                        if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
+                            // up
+                            monster.tileTo[1] -= 1;
+                        } else {
+                            monsterDirection = null;
+                        }
+            
+                    } 
+            
+                    else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
+                        if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
+                            // down
+                            monster.tileTo[1] += 1;
+                        } else {
+                            monsterDirection = null;
+                        }
+                    } 
+            
+                    else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
+                        if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
+                            // right
+                            monster.tileTo[0] -= 1;
+                        } else {
+                            monsterDirection = null;
+                        }
+                    } 
+            
+                    else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
+                        if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
+                            // left
+                            monster.tileTo[0] += 1;
+                        } else {
+                            monsterDirection = null;
+                        }
                     }
-        
-                } 
-        
-                else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
-                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
-                        // down
-                        monster.tileTo[1] += 1;
-                    } else {
-                        monsterDirection = null;
+            
+                    // update the {timeMoved} with the current timestemp
+                    if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
+                        monster.timeMoved = currentFrameTime;
                     }
-                } 
-        
-                else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
-                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
-                        // right
-                        monster.tileTo[0] -= 1;
-                    } else {
-                        monsterDirection = null;
-                    }
-                } 
-        
-                else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
-                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
-                        // left
-                        monster.tileTo[0] += 1;
-                    } else {
-                        monsterDirection = null;
-                    }
-                }
-        
-                // update the {timeMoved} with the current timestemp
-                if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
-                    monster.timeMoved = currentFrameTime;
                 }
             }
         }
+        // for (let i = 0; i < monsters.length; i++) {
+        //     const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
+        //     if (!monster.processMovment(currentFrameTime)) {
+
+        //         // based on the key pressed set the new [row, col] values
+        //         if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
+        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
+        //                 // up
+        //                 monster.tileTo[1] -= 1;
+        //             } else {
+        //                 monsterDirection = null;
+        //             }
+        
+        //         } 
+        
+        //         else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
+        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
+        //                 // down
+        //                 monster.tileTo[1] += 1;
+        //             } else {
+        //                 monsterDirection = null;
+        //             }
+        //         } 
+        
+        //         else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
+        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
+        //                 // right
+        //                 monster.tileTo[0] -= 1;
+        //             } else {
+        //                 monsterDirection = null;
+        //             }
+        //         } 
+        
+        //         else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
+        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
+        //                 // left
+        //                 monster.tileTo[0] += 1;
+        //             } else {
+        //                 monsterDirection = null;
+        //             }
+        //         }
+        
+        //         // update the {timeMoved} with the current timestemp
+        //         if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
+        //             monster.timeMoved = currentFrameTime;
+        //         }
+        //     }
+        // }
 
         // ####################### MONSTER MOVMENT #######################
 
@@ -465,32 +520,79 @@ function drawGame() {
     /**
      ** Draw Monster
      */
-    for (let i = 0; i < monsters.length; i++) {
-        const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[i];
-        ctx.beginPath();
-        ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
-        switch(directionMonster) {
+
+     for (const m in monsters) {
+         if (monsters.hasOwnProperty(m)) {
+            const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[m];
+            ctx.beginPath();
+            ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
+            switch(directionMonster) {
+                
+                case 37:
+                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
+                    break;
+        
+                case 38:
+                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
+                    break;
+        
+                case 39:
+                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
+                    break;
+        
+                case 40:
+                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
+                    break;
+        
+                default:
+                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+            }
+            ctx.closePath();
+             
+         }
+     }
+    // for (let i = 0; i < monsters.length; i++) {
+    //     const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[i];
+    //     ctx.beginPath();
+    //     ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
+    //     switch(directionMonster) {
             
-            case 37:
-                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
-                break;
+    //         case 37:
+    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
+    //             break;
     
-            case 38:
-                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
-                break;
+    //         case 38:
+    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
+    //             break;
     
-            case 39:
-                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
-                break;
+    //         case 39:
+    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
+    //             break;
     
-            case 40:
-                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
-                break;
+    //         case 40:
+    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
+    //             break;
     
-            default:
-                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+    //         default:
+    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+    //     }
+    //     ctx.closePath();
+    // }
+
+    const monstersOnMove = {}
+    if (!isObjEmpty(monsters)) {
+        for (const monster in monsters) {
+            console.log(monsters[monster])
+            monstersOnMove[monster] = {
+                id: monsters[monster].id,
+                position: monsters[monster].monster.position,
+                monsterState: monsters[monster].monsterState,
+                monsterCharacterId: monsters[monster].monsterCharacterId,
+                row: monsters[monster].monster.tileTo[0],
+                col: monsters[monster].monster.tileTo[1],
+            }
         }
-        ctx.closePath();
+
     }
 
    // if (monstersmonsters.length) {
@@ -503,16 +605,9 @@ function drawGame() {
                 characterIdx,
                 powerInState
             },
-            monsters: monsters.map((monster, idx) => ({
-                id: monster.id,
-                position: monster.monster.position,
-                monsterState: monster.monsterState,
-                monsterCharacterId: monster.monsterCharacterId,
-                row: monster.monster.tileTo[0],
-                col: monster.monster.tileTo[1],
-            })) 
+            monsters: monstersOnMove
         });
-        console.log("monsters on move", monsters)
+        
     
 
 
@@ -587,64 +682,74 @@ function randomColor() {
     }
      
 
-    // socket.on("start", data => {
-    //     console.log("start", data)
-    //     players = data.players;
-    //     data.forEach((monster) => {
-    //         monsters[monster.id].monsterState = monster.monsterState
-    //         monsters[monster.id].monster.position = monster.position
-    //     })
-        
 
-    //         /**
-    //  ** Initial monsrers images
-    //  */
-
-
-
-    // });
 
     socket.on("heartbeat", data => {
         
         players = data.players;
-        
-
-        if (!monsters.length) {
-            console.log("data.monsters on heartbeat", data.monsters)
-            for (let i = 0; i < data.monsters.length; i++) {
-                // const rowColMonster = randomSpawn();
-                // const rowMonster = rowColMonster[0];
-                // const colMonster = rowColMonster[1];
-                // const randomMonster = randomIntFromInterval(0, 4);
-                
-                monster = new Character(data.monsters[i].row, data.monsters[i].col);
-                monster.deleyMove = 600;
-                let monsterAnim;
-                monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
-        
-                monsterAnim.load(ctx);
-                monsterAnim.animate("40", 200, 0); // down
-                monsterAnim.animate("37", 200, 1); // right 
-                monsterAnim.animate("39", 200, 2); // left 
-                monsterAnim.animate("38", 200, 3); // up
-                monsters.push({ 
-                    monsterAnim, 
-                    monster,
-                    monsterState: data.monsters[i].monsterState
-                });
+        console.log("initial monsters")
+        if (Object.entries(monsters).length === 0 && monsters.constructor === Object) { // chexck if obj empty
+     
+            for (const i in data.monsters) {
+                if (data.monsters.hasOwnProperty(i)) {
+                    const element = data.monsters[i];
+                    monster = new Character(data.monsters[i].row, data.monsters[i].col);
+                    monster.deleyMove = 600;
+                    let monsterAnim;
+                    monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
+            
+                    monsterAnim.load(ctx);
+                    monsterAnim.animate("40", 200, 0); // down
+                    monsterAnim.animate("37", 200, 1); // right 
+                    monsterAnim.animate("39", 200, 2); // left 
+                    monsterAnim.animate("38", 200, 3); // up
+                    monsters[data.monsters[i].id] = {
+                        monsterAnim, 
+                        monster,
+                        monsterState: data.monsters[i].monsterState 
+                    }
+                }
             }
         }
+           // for (let i = 0; i < data.monsters.length; i++) {                
+                // monster = new Character(data.monsters[i].row, data.monsters[i].col);
+                // monster.deleyMove = 600;
+                // let monsterAnim;
+                // monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
+        
+                // monsterAnim.load(ctx);
+                // monsterAnim.animate("40", 200, 0); // down
+                // monsterAnim.animate("37", 200, 1); // right 
+                // monsterAnim.animate("39", 200, 2); // left 
+                // monsterAnim.animate("38", 200, 3); // up
+                // monsters[data.monsters[i].id] = {
+                //     monsterAnim, 
+                //     monster,
+                //     monsterState: data.monsters[i].monsterState 
+                // }
+            //}
 
-        data.monsters.forEach((monster, idx) => {
-            console.log("monster", monster)
-            monsters[monster.id].monsterState = monster.monsterState
-            monsters[monster.id].monster.position = monster.position
-            monsters[monster.id].monsterCharacterId = monster.monsterCharacterId
-            monsters[monster.id].row = monster.row
-            monsters[monster.id].col = monster.col
-            monsters[monster.id].id = monster.id
+            for (const m in data.monsters) {
+        
+                const monster = data.monsters[m];
+                monsters[m].monsterState = monster.monsterState
+                monsters[m].monster.position = monster.position
+                monsters[m].monsterCharacterId = monster.monsterCharacterId
+                monsters[m].row = monster.row
+                monsters[m].col = monster.col
+                monsters[m].id = monster.id
+                
+            }
+        // data.monsters.forEach((monster, idx) => {
+            
+        //     monsters[monster.id].monsterState = monster.monsterState
+        //     monsters[monster.id].monster.position = monster.position
+        //     monsters[monster.id].monsterCharacterId = monster.monsterCharacterId
+        //     monsters[monster.id].row = monster.row
+        //     monsters[monster.id].col = monster.col
+        //     monsters[monster.id].id = monster.id
 
-        })
+        // });
         
     });
 
@@ -696,24 +801,6 @@ function randomColor() {
     
 
 
-
-
-    function moveMonster(monster) {
-        setInterval(() => {
-            
-            const randomDirection = randomIntFromInterval(37, 40);
-            monster.monsterState.monsterDirectionKeyDown[randomDirection] = true;
-            monster.monsterState.directionMonster = randomDirection;
-            monster.monsterState.lastDirectionMonster = randomDirection.toString();
-    
-            for (const key in monster.monsterState.monsterDirectionKeyDown) {
-                if (key !== randomDirection.toString()) {
-                    monster.monsterState.monsterDirectionKeyDown[key] = false;
-                }
-            }
-            
-        }, monster.monster.deleyMove)
-    }
 
     
     window.addEventListener("keydown", e => {

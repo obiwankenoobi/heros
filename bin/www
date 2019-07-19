@@ -5,7 +5,12 @@
  */
 
 const players = {}
-let monsters = []
+let monsters = {}
+
+
+function isObjEmpty(obj) {
+  return Object.entries(obj).length === 0 && obj.constructor === Object
+}
 
 function Player(id, position, characterState) {
   this.id = id;
@@ -22,7 +27,7 @@ function Monster(id, position, monsterState, monsterCharacterId, row, col) {
   this.col = col;
 }
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 5; i++) {
   const monsterState = {
     monsterDirectionKeyDown: {
         37: false, 
@@ -34,14 +39,20 @@ for (let i = 0; i < 10; i++) {
     lastDirectionMonster:"40", 
   }
   const monster = new Monster(i, [45, 45], monsterState, 1, 1, 1)
-  monsters.push(monster)
+  monsters[i] = monster
 }
 
-console.log("init new monsters")
 
-for (let i = 0; i < monsters.length; i++) {
-  const monster = monsters[i];
-  moveMonster(i)
+
+// for (let i = 0; i < monsters.length; i++) {
+//   moveMonster(i)
+// }
+
+for (const m in monsters) {
+  if (monsters.hasOwnProperty(m)) {
+    const monster = monsters[m];
+    moveMonster(m)
+  }
 }
 
 var app = require('../app');
@@ -74,7 +85,6 @@ function randomIntFromInterval(min,max) {
 
 function moveMonster(i) {
   setInterval(() => {
-
       const randomDirection = randomIntFromInterval(37, 40);
       monsters[i].monsterState.monsterDirectionKeyDown[randomDirection] = true;
       monsters[i].monsterState.directionMonster = randomDirection;
@@ -85,12 +95,13 @@ function moveMonster(i) {
             monsters[i].monsterState.monsterDirectionKeyDown[key] = false;
           }
       }
-      console.log("beat", monsters[0])
-  }, 600)
+      console.log("updating", monsters[i])
+  }, 1000)
 }
 
-function heartBeat(id) {
-  if (monsters.length) {
+function heartBeat() {
+  if (!isObjEmpty(monsters)) {
+    
     io.sockets.emit("heartbeat", { players, monsters })
   }
 }
@@ -112,8 +123,8 @@ io.on('connection', socket => {
       players[data.id].characterState = data.characterState;
     }
     //socket.broadcast.emit("move", players)
-    monsters = data.monsters.length ? data.monsters : monsters;
-    console.log("data.monsters", data.monsters)
+    monsters = Object.entries(data.monsters).length === 0 && data.monsters.constructor === Object ? monsters : data.monsters;
+    
   });
 
   socket.on('disconnect', () => {
