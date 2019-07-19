@@ -585,7 +585,7 @@ function randomColor() {
         const colMonster = rowColMonster[1];
         const randomMonster = randomIntFromInterval(0, 4);
         monster = new Character(rowMonster, colMonster);
-        monster.deleyMove = 1000;
+        monster.deleyMove = 600;
         let monsterAnim;
         monsterAnim = new Sprite("../images/spritexb-" + randomMonster + ".png" , 4, 4);
 
