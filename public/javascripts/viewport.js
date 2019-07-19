@@ -15,7 +15,6 @@ class Viewport {
          */
         this.offset[0] = Math.floor((this.screen[0] / 2) - px);
         this.offset[1] = Math.floor((this.screen[1] / 2) - py);
-
         /**
          ** Calculating the index position of the tile falling under the dead center of the camera position
          */

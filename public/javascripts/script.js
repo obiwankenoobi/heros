@@ -4,7 +4,7 @@ const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
 const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20;
-const powersKeys = {69:true, 82:true, 84:true}
+const powersKeys = { 69:0, 82:1 }
 let player;
 let players = [];
 let socket;
@@ -12,7 +12,7 @@ let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
 let hero;
 let direction = "40";
-let powerInState = null;
+let powerInState = "";
 let lastDirection = "40";
 let heros = [];
 let herosOnline = [];
@@ -28,7 +28,8 @@ const characters= [
     "../images/spritexb-5.png",
 ];
 const powers = [
-    "../images/power1.png"
+    "../images/power-0.png",
+    "../images/power-1.png"
 ]
 const directionKeyDown = {
     37: false, 
@@ -294,10 +295,25 @@ function drawGame() {
 
             const { hero } = herosOnline[players[key].characterState.characterIdx];
             const { characterState } = players[key];
-            const { power } = herosPowersOnline[0];
+
             if (characterState.powerInState) {
-                
-                power.run(viewport.offset[0] + players[key].position[0] - 32, viewport.offset[1] + players[key].position[1] - 10, characterState.powerInState);
+                let powersOffSetX = 0;
+                let powersOffSetY = 0;
+
+                switch(powersKeys[characterState.powerInState]) {
+                    case 0: {
+                        powersOffSetX = -34;
+                        powersOffSetY = -22;
+                        break;
+                    }
+                    case 1: {
+                        powersOffSetX = -32;
+                        powersOffSetY = -10;
+                        break;
+                    }
+                }
+                const { power } = herosPowersOnline[powersKeys[characterState.powerInState]];
+                power.run(viewport.offset[0] + players[key].position[0] + powersOffSetX, viewport.offset[1] + players[key].position[1] + powersOffSetY, characterState.powerInState);
             }
 
             switch(characterState.direction) {
@@ -335,10 +351,25 @@ function drawGame() {
 
     
     {    
-        const { power } = herosPowers[0];
         
         if (powerInState) {
-            power.run(viewport.offset[0] + player.position[0] - 32, viewport.offset[1] + player.position[1] - 10, powerInState);
+            let powersOffSetX = 0;
+            let powersOffSetY = 0;
+
+            switch(powersKeys[powerInState]) {
+                case 0: {
+                    powersOffSetX = -34;
+                    powersOffSetY = -22;
+                    break;
+                }
+                case 1: {
+                    powersOffSetX = -32;
+                    powersOffSetY = -10;
+                    break;
+                }
+            }
+            const { power } = herosPowers[powersKeys[powerInState]];
+            power.run(viewport.offset[0] + player.position[0] + powersOffSetX, viewport.offset[1] + player.position[1] + powersOffSetY, powerInState);
         }
     }
 
@@ -391,6 +422,9 @@ function randomColor() {
 }
 
 (function() {
+    
+
+
 
     let rowCol = randomSpawn()
     let row = rowCol[0];
@@ -439,33 +473,31 @@ function randomColor() {
 
 
 
+    function createNewPowersAnim(arrOfHeros, idx, name, powersCols) {
+        let power;
+        power = new Sprite("../images/power-" + idx + ".png" , powersCols, 1);
+        power.load(ctx);
+        power.animate(name, 100, 0);
+        arrOfHeros.push({ power });
+    }
+
+
+
     /**
      ** Initial all powers for online players
      */
-    for (let idx = 0; idx < powers.length; idx++) {
-        let power;
-        power = new Sprite("../images/power-" + idx + ".png" , 5, 4);
-        power.load(ctx);
-        power.animate("69", 100, 0); // down
-        power.animate("82", 100, 1); // right 
-        // hero.animate("39", 100, 2); // left 
-        // hero.animate("38", 100, 3); // up
-        herosPowersOnline.push({ power, direction, lastDirection });
-    }
+    createNewPowersAnim(herosPowersOnline, 0, "69", 25)
+    createNewPowersAnim(herosPowersOnline, 1, "82", 20)
+
+
+
 
     /**
      ** Initial all powers for player
      */
-    for (let idx = 0; idx < powers.length; idx++) {
-        let power;
-        power = new Sprite("../images/power-" + idx + ".png" , 5, 4);
-        power.load(ctx);
-        power.animate("69", 100, 0); // down
-        power.animate("82", 100, 1); // right 
-        // hero.animate("39", 100, 2); // left 
-        // hero.animate("38", 100, 3); // up
-        herosPowers.push({ power, direction, lastDirection });
-    }
+    createNewPowersAnim(herosPowers, 0, "69", 25)
+    createNewPowersAnim(herosPowers, 1, "82", 20)
+
 
 
     socket.emit("start", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx, powerInState } });
@@ -497,12 +529,8 @@ function randomColor() {
 
 
 
-        if (powersKeys[e.keyCode]) {
-            for (const key in powersKeyDown) {
-                if (key !== e.keyCode.toString()) { powersKeyDown[key] = false; }
-            }
+        if (powersKeys.hasOwnProperty(e.keyCode.toString())) {
             powerInState = e.keyCode.toString();
-            powersKeyDown[e.keyCode] = true;
         }
 
 
@@ -519,8 +547,7 @@ function randomColor() {
             }
         }
 
-        if (powersKeys[e.keyCode]) {
-            powersKeyDown[e.keyCode] = false;
+        if (powersKeys[e.keyCode] || powersKeys[e.keyCode] === 0) {
             powerInState = ""
         }
 
