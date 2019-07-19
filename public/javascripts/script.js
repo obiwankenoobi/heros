@@ -529,9 +529,7 @@ function randomColor() {
     let row = rowCol[0];
     let col = rowCol[1];
 
-    let rowColMonster = randomSpawn();
-    let rowMonster = rowColMonster[0];
-    let colMonster = rowColMonster[1];
+
 
     while (gameMap[toIndex(row, col)] !== 1) {
         rowCol = randomSpawn()
@@ -581,10 +579,14 @@ function randomColor() {
     /**
      ** Initial monsrers images
      */
-    for (let idx = 0; idx < 5; idx++) {
+    for (let idx = 0; idx < 10; idx++) {
+        const rowColMonster = randomSpawn();
+        const rowMonster = rowColMonster[0];
+        const colMonster = rowColMonster[1];
+        const randomMonster = randomIntFromInterval(0, 4);
         monster = new Character(rowMonster, colMonster);
         let monsterAnim;
-        monsterAnim = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        monsterAnim = new Sprite("../images/spritexb-" + randomMonster + ".png" , 4, 4);
         monsterAnim.load(ctx);
         monsterAnim.animate("40", 100, 0); // down
         monsterAnim.animate("37", 100, 1); // right 
@@ -604,6 +606,9 @@ function randomColor() {
         });
     }
 
+     /**
+      ** initial movment for monsters
+      */
     for (let i = 0; i < monsters.length; i++) {
         const monster = monsters[i];
         moveMonster(monster);
