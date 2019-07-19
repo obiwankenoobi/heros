@@ -6,17 +6,27 @@ const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20;
 const powersKeys = { 69:0, 82:1 }
 let player;
+let monster;
+
 let players = [];
 let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
 let hero;
-let direction = "40";
+
+let monsterDirection = "40";
 let powerInState = "";
+
+let direction = "40";
 let lastDirection = "40";
+
+let directionMonster = "40";
+let lastDirectionMonster = "40";
+
 let heros = [];
 let herosOnline = [];
 let herosPowers = [];
+let arrOfMonsters = [];
 let herosPowersOnline = [];
 let characterIdx;
 
@@ -32,6 +42,13 @@ const powers = [
     "../images/power-1.png"
 ]
 const directionKeyDown = {
+    37: false, 
+    38: false,
+    39: false,
+    40: false
+}
+
+const monsterDirectionKeyDown = {
     37: false, 
     38: false,
     39: false,
@@ -169,6 +186,11 @@ const gameMap = [
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ];
 
+function randomIntFromInterval(min,max) // min and max included
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
 
 function drawGame() {
     const sec = Math.floor(Date.now() / 1000); // counting seconds
@@ -234,6 +256,55 @@ function drawGame() {
             player.timeMoved = currentFrameTime;
         }
     }
+
+
+        // ####################### MONSTER MOVMENT #######################
+
+        if (!monster.processMovment(currentFrameTime)) {
+            // based on the key pressed set the new [row, col] values
+            if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
+                if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
+                    // up
+                    monster.tileTo[1] -= 1;
+                } else {
+                    monsterDirection = null;
+                }
+    
+            } 
+    
+            else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
+                if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
+                    // down
+                    monster.tileTo[1] += 1;
+                } else {
+                    monsterDirection = null;
+                }
+            } 
+    
+            else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
+                if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
+                    // right
+                    monster.tileTo[0] -= 1;
+                } else {
+                    monsterDirection = null;
+                }
+            } 
+    
+            else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
+                if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
+                    // left
+                    monster.tileTo[0] += 1;
+                } else {
+                    monsterDirection = null;
+                }
+            }
+    
+            // update the {timeMoved} with the current timestemp
+            if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
+                monster.timeMoved = currentFrameTime;
+            }
+        }
+        // ####################### MONSTER MOVMENT #######################
 
     viewport.update(
         player.position[0] + (player.dimentsions[0] / 2), 
@@ -345,34 +416,29 @@ function drawGame() {
     /**
      ** Drawing player
      */
-    ctx.beginPath();
-    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
-    const { hero } = heros[characterIdx];
+    if (powerInState) {
+        let powersOffSetX = 0;
+        let powersOffSetY = 0;
 
-    
-    {    
-        
-        if (powerInState) {
-            let powersOffSetX = 0;
-            let powersOffSetY = 0;
-
-            switch(powersKeys[powerInState]) {
-                case 0: {
-                    powersOffSetX = -34;
-                    powersOffSetY = -22;
-                    break;
-                }
-                case 1: {
-                    powersOffSetX = -32;
-                    powersOffSetY = -10;
-                    break;
-                }
+        switch(powersKeys[powerInState]) {
+            case 0: {
+                powersOffSetX = -34;
+                powersOffSetY = -22;
+                break;
             }
-            const { power } = herosPowers[powersKeys[powerInState]];
-            power.run(viewport.offset[0] + player.position[0] + powersOffSetX, viewport.offset[1] + player.position[1] + powersOffSetY, powerInState);
+            case 1: {
+                powersOffSetX = -32;
+                powersOffSetY = -10;
+                break;
+            }
         }
+        const { power } = herosPowers[powersKeys[powerInState]];
+        power.run(viewport.offset[0] + player.position[0] + powersOffSetX, viewport.offset[1] + player.position[1] + powersOffSetY, powerInState);
     }
 
+    const { hero } = heros[characterIdx]; 
+    ctx.beginPath();
+    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
     switch(direction) {
         
         case 37:
@@ -393,6 +459,35 @@ function drawGame() {
 
         default:
             hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
+    }
+    ctx.closePath();
+
+    /**
+     ** Draw Monster
+     */
+    ctx.beginPath();
+    ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
+    const { monsterAnim } = arrOfMonsters[0]; 
+    switch(directionMonster) {
+        
+        case 37:
+            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
+            break;
+
+        case 38:
+            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
+            break;
+
+        case 39:
+            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
+            break;
+
+        case 40:
+            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
+            break;
+
+        default:
+            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],lastDirection, true);
     }
     ctx.closePath();
 
@@ -426,18 +521,26 @@ function randomColor() {
 
 
 
-    let rowCol = randomSpawn()
+    let rowCol = randomSpawn();
     let row = rowCol[0];
     let col = rowCol[1];
+
+    let rowColMonster = randomSpawn();
+    let rowMonster = rowColMonster[0];
+    let colMonster = rowColMonster[1];
 
     while (gameMap[toIndex(row, col)] !== 1) {
         rowCol = randomSpawn()
         row = randomSpawn()[0];
-        col = randomSpawn()[1]
+        col = randomSpawn()[1];
     }
 
     // new player init
-    player = new Character(row, col)
+    player = new Character(row, col);
+    monster = new Character(rowMonster, colMonster);
+
+
+
     socket = io.connect("http://localhost:3000");
 
 
@@ -470,7 +573,20 @@ function randomColor() {
         hero.animate("38", 100, 3); // up
         herosOnline.push({ hero, direction, lastDirection });
     }
-
+     
+    /**
+     ** Initial monsrers images
+     */
+    for (let idx = 0; idx < 1; idx++) {
+        let monsterAnim;
+        monsterAnim = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        monsterAnim.load(ctx);
+        monsterAnim.animate("40", 100, 0); // down
+        monsterAnim.animate("37", 100, 1); // right 
+        monsterAnim.animate("39", 100, 2); // left 
+        monsterAnim.animate("38", 100, 3); // up
+        arrOfMonsters.push({ monsterAnim, monsterDirection, lastDirectionMonster });
+    }
 
 
     function createNewPowersAnim(arrOfHeros, idx, name, powersCols) {
@@ -500,12 +616,41 @@ function randomColor() {
 
 
 
-    socket.emit("start", { position:player.position, id:socket.id, characterState: { direction, lastDirection, characterIdx, powerInState } });
+    socket.emit("start", { 
+        monsterPosition: monster.position, 
+        position: player.position, id:socket.id, 
+        characterState: { 
+            direction, 
+            lastDirection, 
+            characterIdx, 
+            powerInState 
+        }, 
+        monsterState: { 
+            // direction, 
+            // lastDirection, 
+            // characterIdx, 
+            // powerInState 
+        } 
+    });
 
     socket.on("heartbeat", data => {
         players = data;
     });
 
+
+    setInterval(() => {
+        const randomDirection = randomIntFromInterval(37, 40);
+        monsterDirectionKeyDown[randomDirection] = true;
+        directionMonster = randomDirection;
+        lastDirectionMonster = randomDirection.toString();
+
+        for (const key in monsterDirectionKeyDown) {
+            if (key !== randomDirection.toString()) {
+                monsterDirectionKeyDown[key] = false;
+            }
+        }
+        console.log("directionMonster", directionMonster)
+    }, monster.deleyMove)
     
     window.addEventListener("keydown", e => {
         console.log(e.keyCode)
