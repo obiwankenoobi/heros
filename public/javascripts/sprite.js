@@ -47,7 +47,6 @@ class Sprite {
         //console.log(x, y, animationName, this.animations)
         const now = new Date().getTime()
         const anim = this.animations[animationName]
-        //console.log("animationName", animationName)
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
         if (!stop) {

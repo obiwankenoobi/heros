@@ -152,8 +152,8 @@ function toIndex(row, col) {
      ** helper to calculate the index based on the [row, col]
      */
     
-    return (col * mapW) + row; // <== from the tutorial and doesnt make sence to me
-    //return (row * mapW) + col
+    return (col * mapW) + row;
+    
 }
 
 
@@ -182,8 +182,7 @@ const gameMap = [
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ];
 
-function randomIntFromInterval(min,max) // min and max included
-{
+function randomIntFromInterval(min,max) {
     return Math.floor(Math.random()*(max-min+1)+min);
 }
 
@@ -255,11 +254,11 @@ function drawGame() {
 
 
         // ####################### MONSTER MOVMENT #######################
-
+        
         for (let i = 0; i < monsters.length; i++) {
-            const { monsterDirectionKeyDown, monster } = monsters[i];
+            const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
             if (!monster.processMovment(currentFrameTime)) {
-            
+
                 // based on the key pressed set the new [row, col] values
                 if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
                     if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
@@ -467,7 +466,7 @@ function drawGame() {
      ** Draw Monster
      */
     for (let i = 0; i < monsters.length; i++) {
-        const { monsterAnim, lastDirectionMonster, directionMonster, monster } = monsters[i];
+        const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[i];
         ctx.beginPath();
         ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
         switch(directionMonster) {
@@ -494,17 +493,28 @@ function drawGame() {
         ctx.closePath();
     }
 
+   // if (monstersmonsters.length) {
+        socket.emit("move", { 
+            position: player.position, 
+            id: socket.id, 
+            characterState: { 
+                direction, 
+                lastDirection, 
+                characterIdx,
+                powerInState
+            },
+            monsters: monsters.map((monster, idx) => ({
+                id: monster.id,
+                position: monster.monster.position,
+                monsterState: monster.monsterState,
+                monsterCharacterId: monster.monsterCharacterId,
+                row: monster.monster.tileTo[0],
+                col: monster.monster.tileTo[1],
+            })) 
+        });
+        console.log("monsters on move", monsters)
+    
 
-    socket.emit("move", { 
-        position: player.position, 
-        id: socket.id, 
-        characterState: { 
-            direction, 
-            lastDirection, 
-            characterIdx,
-            powerInState
-        }  
-    });
 
     ctx.fillStyle = "#ff0000"
     ctx.fillText("FPS:" + framesLastSecond, 10, 20);
@@ -576,47 +586,71 @@ function randomColor() {
         herosOnline.push({ hero, direction, lastDirection });
     }
      
-    /**
-     ** Initial monsrers images
-     */
-    for (let idx = 0; idx < 10; idx++) {
-        const rowColMonster = randomSpawn();
-        const rowMonster = rowColMonster[0];
-        const colMonster = rowColMonster[1];
-        const randomMonster = randomIntFromInterval(0, 4);
-        monster = new Character(rowMonster, colMonster);
-        monster.deleyMove = 600;
-        let monsterAnim;
-        monsterAnim = new Sprite("../images/spritexb-" + randomMonster + ".png" , 4, 4);
 
-        monsterAnim.load(ctx);
-        monsterAnim.animate("40", 200, 0); // down
-        monsterAnim.animate("37", 200, 1); // right 
-        monsterAnim.animate("39", 200, 2); // left 
-        monsterAnim.animate("38", 200, 3); // up
-        monsters.push({ 
-            monsterAnim, 
-            directionMonster:"40", 
-            lastDirectionMonster:"40", 
-            monster,
-            monsterDirectionKeyDown: {
-                37: false, 
-                38: false,
-                39: false,
-                40: false
-            }               
-        });
-    }
+    // socket.on("start", data => {
+    //     console.log("start", data)
+    //     players = data.players;
+    //     data.forEach((monster) => {
+    //         monsters[monster.id].monsterState = monster.monsterState
+    //         monsters[monster.id].monster.position = monster.position
+    //     })
+        
 
-     /**
-      ** initial movment for monsters
-      */
-    for (let i = 0; i < monsters.length; i++) {
-        const monster = monsters[i];
-        moveMonster(monster);
-        console.log("moveMonster")
-    }
+    //         /**
+    //  ** Initial monsrers images
+    //  */
 
+
+
+    // });
+
+    socket.on("heartbeat", data => {
+        
+        players = data.players;
+        
+
+        if (!monsters.length) {
+            console.log("data.monsters on heartbeat", data.monsters)
+            for (let i = 0; i < data.monsters.length; i++) {
+                // const rowColMonster = randomSpawn();
+                // const rowMonster = rowColMonster[0];
+                // const colMonster = rowColMonster[1];
+                // const randomMonster = randomIntFromInterval(0, 4);
+                
+                monster = new Character(data.monsters[i].row, data.monsters[i].col);
+                monster.deleyMove = 600;
+                let monsterAnim;
+                monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
+        
+                monsterAnim.load(ctx);
+                monsterAnim.animate("40", 200, 0); // down
+                monsterAnim.animate("37", 200, 1); // right 
+                monsterAnim.animate("39", 200, 2); // left 
+                monsterAnim.animate("38", 200, 3); // up
+                monsters.push({ 
+                    monsterAnim, 
+                    monster,
+                    monsterState: data.monsters[i].monsterState
+                });
+            }
+        }
+
+        data.monsters.forEach((monster, idx) => {
+            console.log("monster", monster)
+            monsters[monster.id].monsterState = monster.monsterState
+            monsters[monster.id].monster.position = monster.position
+            monsters[monster.id].monsterCharacterId = monster.monsterCharacterId
+            monsters[monster.id].row = monster.row
+            monsters[monster.id].col = monster.col
+            monsters[monster.id].id = monster.id
+
+        })
+        
+    });
+
+
+
+    
 
     function createNewPowersAnim(arrOfHeros, idx, name, powersCols) {
         let power;
@@ -646,7 +680,6 @@ function randomColor() {
 
 
     socket.emit("start", { 
-        monsterPosition: monster.position, 
         position: player.position, id:socket.id, 
         characterState: { 
             direction, 
@@ -654,33 +687,31 @@ function randomColor() {
             characterIdx, 
             powerInState 
         }, 
-        monsterState: { 
-            // direction, 
-            // lastDirection, 
-            // characterIdx, 
-            // powerInState 
-        } 
+        // monsters: monsters.map((monster, idx) => ({
+        //     id: idx,
+        //     position: monster.monster.position,
+        //     monsterState: monster.monsterState
+        // }))
     });
+    
 
-    socket.on("heartbeat", data => {
-        players = data;
-    });
+
 
 
     function moveMonster(monster) {
         setInterval(() => {
             
             const randomDirection = randomIntFromInterval(37, 40);
-            monster.monsterDirectionKeyDown[randomDirection] = true;
-            monster.directionMonster = randomDirection;
-            monster.lastDirectionMonster = randomDirection.toString();
+            monster.monsterState.monsterDirectionKeyDown[randomDirection] = true;
+            monster.monsterState.directionMonster = randomDirection;
+            monster.monsterState.lastDirectionMonster = randomDirection.toString();
     
-            for (const key in monster.monsterDirectionKeyDown) {
+            for (const key in monster.monsterState.monsterDirectionKeyDown) {
                 if (key !== randomDirection.toString()) {
-                    monster.monsterDirectionKeyDown[key] = false;
+                    monster.monsterState.monsterDirectionKeyDown[key] = false;
                 }
             }
-            console.log("randomDirection", randomDirection)
+            
         }, monster.monster.deleyMove)
     }
 

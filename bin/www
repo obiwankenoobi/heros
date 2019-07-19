@@ -5,12 +5,45 @@
  */
 
 const players = {}
+let monsters = []
 
 function Player(id, position, characterState) {
   this.id = id;
   this.position = position;
   this.characterState = characterState;
 }
+
+function Monster(id, position, monsterState, monsterCharacterId, row, col) {
+  this.id = id;
+  this.position = position;
+  this.monsterState = monsterState;
+  this.monsterCharacterId = monsterCharacterId;
+  this.row = row;
+  this.col = col;
+}
+
+for (let i = 0; i < 10; i++) {
+  const monsterState = {
+    monsterDirectionKeyDown: {
+        37: false, 
+        38: false,
+        39: false,
+        40: false
+    },
+    directionMonster:"40", 
+    lastDirectionMonster:"40", 
+  }
+  const monster = new Monster(i, [45, 45], monsterState, 1, 1, 1)
+  monsters.push(monster)
+}
+
+console.log("init new monsters")
+
+for (let i = 0; i < monsters.length; i++) {
+  const monster = monsters[i];
+  moveMonster(i)
+}
+
 var app = require('../app');
 var debug = require('debug')('heros:server');
 var http = require('http');
@@ -35,23 +68,52 @@ function randomColor() {
   return '#'+Math.floor(Math.random()*16777215).toString(16);
 }
 
+function randomIntFromInterval(min,max) {
+  return Math.floor(Math.random()*(max-min+1)+min);
+}
 
-setInterval(() => io.sockets.emit("heartbeat", players), 1000 / 60)
+function moveMonster(i) {
+  setInterval(() => {
 
+      const randomDirection = randomIntFromInterval(37, 40);
+      monsters[i].monsterState.monsterDirectionKeyDown[randomDirection] = true;
+      monsters[i].monsterState.directionMonster = randomDirection;
+      monsters[i].monsterState.lastDirectionMonster = randomDirection.toString();
+
+      for (const key in monsters[i].monsterState.monsterDirectionKeyDown) {
+          if (key !== randomDirection.toString()) {
+            monsters[i].monsterState.monsterDirectionKeyDown[key] = false;
+          }
+      }
+      console.log("beat", monsters[0])
+  }, 600)
+}
+
+function heartBeat(id) {
+  if (monsters.length) {
+    io.sockets.emit("heartbeat", { players, monsters })
+  }
+}
+
+
+setInterval(heartBeat, 1000 / 60)
 io.on('connection', socket => {
-
+  
   socket.on("start", data => {
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
-    console.log("players", players);
+    io.to(`${socket.id}`).emit("start");
   });
 
   socket.on("move", data => {
+
     if (players[data.id]) {
       players[data.id].position = data.position;
       players[data.id].characterState = data.characterState;
     }
     //socket.broadcast.emit("move", players)
+    monsters = data.monsters.length ? data.monsters : monsters;
+    console.log("data.monsters", data.monsters)
   });
 
   socket.on('disconnect', () => {
