@@ -585,13 +585,15 @@ function randomColor() {
         const colMonster = rowColMonster[1];
         const randomMonster = randomIntFromInterval(0, 4);
         monster = new Character(rowMonster, colMonster);
+        monster.deleyMove = 1000;
         let monsterAnim;
         monsterAnim = new Sprite("../images/spritexb-" + randomMonster + ".png" , 4, 4);
+
         monsterAnim.load(ctx);
-        monsterAnim.animate("40", 100, 0); // down
-        monsterAnim.animate("37", 100, 1); // right 
-        monsterAnim.animate("39", 100, 2); // left 
-        monsterAnim.animate("38", 100, 3); // up
+        monsterAnim.animate("40", 200, 0); // down
+        monsterAnim.animate("37", 200, 1); // right 
+        monsterAnim.animate("39", 200, 2); // left 
+        monsterAnim.animate("38", 200, 3); // up
         monsters.push({ 
             monsterAnim, 
             directionMonster:"40", 
