@@ -6,9 +6,10 @@ const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20;
 const powersKeys = { 69:0, 82:1 }
 let player;
-let monster;
+//let monster;
 
 let players = [];
+let monsters = []
 let socket;
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 let lastFrameTime = 0;
@@ -20,8 +21,8 @@ let powerInState = "";
 let direction = "40";
 let lastDirection = "40";
 
-let directionMonster = "40";
-let lastDirectionMonster = "40";
+// let directionMonster = "40";
+// let lastDirectionMonster = "40";
 
 let heros = [];
 let herosOnline = [];
@@ -48,12 +49,7 @@ const directionKeyDown = {
     40: false
 }
 
-const monsterDirectionKeyDown = {
-    37: false, 
-    38: false,
-    39: false,
-    40: false
-}
+
 
 const powersKeyDown = {
     69: false, 
@@ -260,50 +256,55 @@ function drawGame() {
 
         // ####################### MONSTER MOVMENT #######################
 
-        if (!monster.processMovment(currentFrameTime)) {
-            // based on the key pressed set the new [row, col] values
-            if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
-                if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
-                    // up
-                    monster.tileTo[1] -= 1;
-                } else {
-                    monsterDirection = null;
+        for (let i = 0; i < monsters.length; i++) {
+            const { monsterDirectionKeyDown, monster } = monsters[i];
+            if (!monster.processMovment(currentFrameTime)) {
+            
+                // based on the key pressed set the new [row, col] values
+                if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
+                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
+                        // up
+                        monster.tileTo[1] -= 1;
+                    } else {
+                        monsterDirection = null;
+                    }
+        
+                } 
+        
+                else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
+                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
+                        // down
+                        monster.tileTo[1] += 1;
+                    } else {
+                        monsterDirection = null;
+                    }
+                } 
+        
+                else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
+                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
+                        // right
+                        monster.tileTo[0] -= 1;
+                    } else {
+                        monsterDirection = null;
+                    }
+                } 
+        
+                else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
+                    if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
+                        // left
+                        monster.tileTo[0] += 1;
+                    } else {
+                        monsterDirection = null;
+                    }
                 }
-    
-            } 
-    
-            else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
-                if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
-                    // down
-                    monster.tileTo[1] += 1;
-                } else {
-                    monsterDirection = null;
+        
+                // update the {timeMoved} with the current timestemp
+                if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
+                    monster.timeMoved = currentFrameTime;
                 }
-            } 
-    
-            else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
-                if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
-                    // right
-                    monster.tileTo[0] -= 1;
-                } else {
-                    monsterDirection = null;
-                }
-            } 
-    
-            else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
-                if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
-                    // left
-                    monster.tileTo[0] += 1;
-                } else {
-                    monsterDirection = null;
-                }
-            }
-    
-            // update the {timeMoved} with the current timestemp
-            if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
-                monster.timeMoved = currentFrameTime;
             }
         }
+
         // ####################### MONSTER MOVMENT #######################
 
     viewport.update(
@@ -465,31 +466,34 @@ function drawGame() {
     /**
      ** Draw Monster
      */
-    ctx.beginPath();
-    ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
-    const { monsterAnim } = arrOfMonsters[0]; 
-    switch(directionMonster) {
-        
-        case 37:
-            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
-            break;
-
-        case 38:
-            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
-            break;
-
-        case 39:
-            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
-            break;
-
-        case 40:
-            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
-            break;
-
-        default:
-            monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],lastDirection, true);
+    for (let i = 0; i < monsters.length; i++) {
+        const { monsterAnim, lastDirectionMonster, directionMonster, monster } = monsters[i];
+        ctx.beginPath();
+        ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
+        switch(directionMonster) {
+            
+            case 37:
+                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
+                break;
+    
+            case 38:
+                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
+                break;
+    
+            case 39:
+                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
+                break;
+    
+            case 40:
+                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
+                break;
+    
+            default:
+                monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+        }
+        ctx.closePath();
     }
-    ctx.closePath();
+
 
     socket.emit("move", { 
         position: player.position, 
@@ -537,7 +541,7 @@ function randomColor() {
 
     // new player init
     player = new Character(row, col);
-    monster = new Character(rowMonster, colMonster);
+
 
 
 
@@ -577,7 +581,8 @@ function randomColor() {
     /**
      ** Initial monsrers images
      */
-    for (let idx = 0; idx < 1; idx++) {
+    for (let idx = 0; idx < 5; idx++) {
+        monster = new Character(rowMonster, colMonster);
         let monsterAnim;
         monsterAnim = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
         monsterAnim.load(ctx);
@@ -585,7 +590,24 @@ function randomColor() {
         monsterAnim.animate("37", 100, 1); // right 
         monsterAnim.animate("39", 100, 2); // left 
         monsterAnim.animate("38", 100, 3); // up
-        arrOfMonsters.push({ monsterAnim, monsterDirection, lastDirectionMonster });
+        monsters.push({ 
+            monsterAnim, 
+            directionMonster:"40", 
+            lastDirectionMonster:"40", 
+            monster,
+            monsterDirectionKeyDown: {
+                37: false, 
+                38: false,
+                39: false,
+                40: false
+            }               
+        });
+    }
+
+    for (let i = 0; i < monsters.length; i++) {
+        const monster = monsters[i];
+        moveMonster(monster);
+        console.log("moveMonster")
     }
 
 
@@ -638,19 +660,23 @@ function randomColor() {
     });
 
 
-    setInterval(() => {
-        const randomDirection = randomIntFromInterval(37, 40);
-        monsterDirectionKeyDown[randomDirection] = true;
-        directionMonster = randomDirection;
-        lastDirectionMonster = randomDirection.toString();
-
-        for (const key in monsterDirectionKeyDown) {
-            if (key !== randomDirection.toString()) {
-                monsterDirectionKeyDown[key] = false;
+    function moveMonster(monster) {
+        setInterval(() => {
+            
+            const randomDirection = randomIntFromInterval(37, 40);
+            monster.monsterDirectionKeyDown[randomDirection] = true;
+            monster.directionMonster = randomDirection;
+            monster.lastDirectionMonster = randomDirection.toString();
+    
+            for (const key in monster.monsterDirectionKeyDown) {
+                if (key !== randomDirection.toString()) {
+                    monster.monsterDirectionKeyDown[key] = false;
+                }
             }
-        }
-        console.log("directionMonster", directionMonster)
-    }, monster.deleyMove)
+            console.log("randomDirection", randomDirection)
+        }, monster.monster.deleyMove)
+    }
+
     
     window.addEventListener("keydown", e => {
         console.log(e.keyCode)
