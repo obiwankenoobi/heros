@@ -15,7 +15,8 @@ let monsters = {}; // object of monsters in the game
 let socket; // socket instance
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0; // frames count
 let lastFrameTime = 0; // last frame time in ms
-//let hero;
+
+let underAttack = false; // player is under attack
 
 let monsterDirection = "40"; // monster direction (need to check if needed)
 let powerInState = ""; // current power move in state
@@ -208,7 +209,7 @@ function randomIntFromInterval(min,max) {
 
 
 function drawGame() {
-    
+
     const sec = Math.floor(Date.now() / 1000); // counting seconds
     const currentFrameTime = Date.now();
     const timeElapsed = currentFrameTime - lastFrameTime;
@@ -223,7 +224,15 @@ function drawGame() {
         currentSecond = sec; 
         framesLastSecond = frameCount;
         frameCount = 1;
+        underAttack = false;
+        for (const i in monsters) {
+            if (monsters[i].row === player.tileTo[0] && monsters[i].col === player.tileTo[1]) {
+                console.log("under attack")
+                underAttack = true;
+            } 
+        }
     } else {
+
         frameCount++;
     }
 
@@ -410,9 +419,7 @@ function drawGame() {
                 }
                 const { power } = herosPowersOnline[powersKeys[characterState.powerInState]];
                 power.run(viewport.offset[0] + players[key].position[0] + powersOffSetX, viewport.offset[1] + players[key].position[1] + powersOffSetY, characterState.powerInState);
-            }
-
-            if (characterState.fightMoveInState) {
+            } else if (characterState.fightMoveInState) {
                 console.log("characterState.fightMoveInState", characterState.fightMoveInState)
                 let fightingOffSetX = 0;
                 let fightingOffSetY = 0;
@@ -442,6 +449,25 @@ function drawGame() {
                     default:
                 }
         
+            } else if (characterState.underAttack) {
+      
+                let fightingOffSetX = 0;
+                let fightingOffSetY = 0;
+               
+                
+                if (characterState.lastDirectionLeftRight === 37) {
+                    console.log("lastDirectionLeftRight", characterState.lastDirectionLeftRight)
+                    hero.run(
+                        viewport.offset[0] + players[key].position[0]  + fightingOffSetX, 
+                        viewport.offset[1] + players[key].position[1]  + fightingOffSetY, 
+                        "underAttackRight", false);
+                } else {
+                    hero.run(
+                        viewport.offset[0] + players[key].position[0]  + fightingOffSetX, 
+                        viewport.offset[1] + players[key].position[1]  + fightingOffSetY, 
+                        "underAttackLeft", false);
+                }
+
             } else {
                 // we put this block here to prevent the animation to start when
                 // the animation of fighting is on
@@ -464,11 +490,8 @@ function drawGame() {
         
                 default:
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true);
+                }
             }
-            }
-
-
-
             ctx.closePath();
 
         }
@@ -478,6 +501,7 @@ function drawGame() {
     /**
      ** Drawing player
      */
+
     if (powerInState) {
         let powersOffSetX = 0;
         let powersOffSetY = 0;
@@ -496,9 +520,8 @@ function drawGame() {
         }
         const { power } = herosPowers[powersKeys[powerInState]];
         power.run(viewport.offset[0] + player.position[0] + powersOffSetX, viewport.offset[1] + player.position[1] + powersOffSetY, powerInState);
-    } 
-    
-    if (fightMoveInState) {
+
+    } else if (fightMoveInState) {
 
         let fightingOffSetX = 0;
         let fightingOffSetY = 0;
@@ -529,42 +552,67 @@ function drawGame() {
             default:
         }
 
+    } else if (underAttack) {
+      
+        let fightingOffSetX = 0;
+        let fightingOffSetY = 0;
+        const { hero } = heros[characterIdx];
+        
+        if (lastDirectionLeftRight === 37) {
+            console.log("lastDirectionLeftRight", lastDirectionLeftRight)
+            hero.run(
+                viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                "underAttackRight", false);
+        } else {
+            hero.run(
+                viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                "underAttackLeft", false);
+        }
+
+    } else if (direction) {
+        const { hero } = heros[characterIdx]; 
+        ctx.beginPath();
+        let playerOffSetX = 0;
+        let playerOffSetY = 0;
+        ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
+    
+        switch(direction) {
+            
+            case 37:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"37");
+                break;
+    
+            case 38:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"38");
+                break;
+    
+            case 39:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"39");
+                break;
+    
+            case 40:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"40");
+                break;
+    
+    
+    
+            default:
+            //hero.reset(0)
+               // hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], lastDirection, true);
+        }
+        ctx.closePath();
     } else {
         const { hero } = heros[characterIdx];
         hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
     }
 
-    const { hero } = heros[characterIdx]; 
-    ctx.beginPath();
-    let playerOffSetX = 0;
-    let playerOffSetY = 0;
-    ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
 
-    switch(direction) {
-        
-        case 37:
-            hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"37");
-            break;
+   // if (!underAttack && !fightMoveInState) {
 
-        case 38:
-            hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"38");
-            break;
+   // }
 
-        case 39:
-            hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"39");
-            break;
-
-        case 40:
-            hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"40");
-            break;
-
-
-
-        default:
-        //hero.reset(0)
-           // hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], lastDirection, true);
-    }
-    ctx.closePath();
 
 
 
@@ -648,7 +696,8 @@ function drawGame() {
                     characterIdx,
                     powerInState,
                     lastDirectionLeftRight,
-                    fightMoveInState
+                    fightMoveInState,
+                    underAttack
                 },
                 monsters: monstersOnMove
             });
@@ -713,6 +762,8 @@ function randomColor() {
         hero.animate("38", 100, 7, 0, 3); // up
         hero.animate("81", 100, 1, 3); // q (fight - left)
         hero.animate("811", 100, 9, 0, 3); // q (fight - right)
+        hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
+        hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
         heros.push({ hero, direction, lastDirection });
     }
 
@@ -729,6 +780,8 @@ function randomColor() {
         hero.animate("38", 100, 7, 0, 3); // up
         hero.animate("81", 100, 1, 3); // q (fight - left)
         hero.animate("811", 100, 9, 0, 3); // q (fight - right)
+        hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
+        hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
         herosOnline.push({ hero, direction, lastDirection });
     }
      

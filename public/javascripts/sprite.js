@@ -43,7 +43,7 @@ class Sprite {
     //     };
     // }
 
-    animate(name, duration, row /* 0 based */, startAtCol = 0, endAtCol = this.totCols) {
+    animate(name, duration, row, startAtCol = 0, endAtCol = this.totCols) {
 
         let frames = [];
 
@@ -93,15 +93,16 @@ class Sprite {
         const now = new Date().getTime()
         const anim = this.animations[animationName]
 
-        // console.log("-------------------------------")
-        // console.log("-------------------------------")
-        // console.log("-------------------------------")
-        // console.log("anim.frames", anim.frames)
-        // console.log("anim.frames[this.next];", anim.frames[this.next])
-        // console.log("anim", anim)
-        // console.log("animationName", animationName)
-        // console.log("this.next", this.next)
-        // console.log("anim.length - 1", anim.frames.length - 1)
+        console.log("-------------------------------")
+        console.log("-------------------------------")
+        console.log("-------------------------------")
+        console.log("animationName", animationName)
+        console.log("this.animations", this.animations)
+        console.log("anim", anim)
+        console.log("anim.frames", anim.frames)
+        console.log("anim.frames[this.next];", anim.frames[this.next])
+        console.log("this.next", this.next)
+        console.log("anim.length - 1", anim.frames.length - 1)
 
         if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
