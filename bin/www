@@ -40,10 +40,10 @@ function Player(id, position, characterState) {
 }
 
 function Monster(id, position, monsterState, monsterCharacterId, row, col) {
-  this.id = id; // X
+  this.id = id;
   this.position = position;
   this.monsterState = monsterState;
-  this.monsterCharacterId = monsterCharacterId; // X
+  this.monsterCharacterId = monsterCharacterId;
   this.row = row;
   this.col = col;
 }
@@ -131,7 +131,6 @@ io.on('connection', socket => {
     }
 
     monsters = data.monsters
-    console.log(monsters[0].position, socket.id)
   });
 
   socket.on('disconnect', () => {

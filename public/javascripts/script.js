@@ -311,56 +311,7 @@ function drawGame() {
                 }
             }
         }
-        // for (let i = 0; i < monsters.length; i++) {
-        //     const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
-        //     if (!monster.processMovment(currentFrameTime)) {
 
-        //         // based on the key pressed set the new [row, col] values
-        //         if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
-        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
-        //                 // up
-        //                 monster.tileTo[1] -= 1;
-        //             } else {
-        //                 monsterDirection = null;
-        //             }
-        
-        //         } 
-        
-        //         else if (monsterDirectionKeyDown[40] && monster.tileFrom[1] < mapH - 1) {
-        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
-        //                 // down
-        //                 monster.tileTo[1] += 1;
-        //             } else {
-        //                 monsterDirection = null;
-        //             }
-        //         } 
-        
-        //         else if (monsterDirectionKeyDown[37] && monster.tileFrom[0] > 0) {
-        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
-        //                 // right
-        //                 monster.tileTo[0] -= 1;
-        //             } else {
-        //                 monsterDirection = null;
-        //             }
-        //         } 
-        
-        //         else if (monsterDirectionKeyDown[39] && monster.tileFrom[0] < mapW - 1) {
-        //             if (safeAreas[gameMap[toIndex(monster.tileFrom[0] + 1, monster.tileFrom[1])]]) {
-        //                 // left
-        //                 monster.tileTo[0] += 1;
-        //             } else {
-        //                 monsterDirection = null;
-        //             }
-        //         }
-        
-        //         // update the {timeMoved} with the current timestemp
-        //         if (monster.tileFrom[0] !== monster.tileTo[0] || monster.tileFrom[1] !== monster.tileTo[1]) {
-        //             monster.timeMoved = currentFrameTime;
-        //         }
-        //     }
-        // }
-
-        // ####################### MONSTER MOVMENT #######################
 
     viewport.update(
         player.position[0] + (player.dimentsions[0] / 2), 
@@ -522,63 +473,56 @@ function drawGame() {
      ** Draw Monster
      */
 
+
+
+
      for (const m in monsters) {
+
          if (monsters.hasOwnProperty(m)) {
-            const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[m];
+            const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster, monsterCharacterId } = monsters[m];
+
+            switch(monsterCharacterId) {
+                case 0: {
+                    monsterOffSetX = -34;
+                    monsterOffSetY = -22;
+                    breakmonster
+                }
+                case 1: {
+                    monsterOffSetX = -10;
+                    monsterOffSetY = 0;
+                    break;
+                }
+            }
+
+
             ctx.beginPath();
             ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
             switch(directionMonster) {
                 
                 case 37:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
+                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "37");
                     break;
         
                 case 38:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
+                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "38");
                     break;
         
                 case 39:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
+                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "39");
                     break;
         
                 case 40:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
+                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "40");
                     break;
         
                 default:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
             }
             ctx.closePath();
              
          }
      }
-    // for (let i = 0; i < monsters.length; i++) {
-    //     const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster } = monsters[i];
-    //     ctx.beginPath();
-    //     ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
-    //     switch(directionMonster) {
-            
-    //         case 37:
-    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"37");
-    //             break;
-    
-    //         case 38:
-    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"38");
-    //             break;
-    
-    //         case 39:
-    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"39");
-    //             break;
-    
-    //         case 40:
-    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1],"40");
-    //             break;
-    
-    //         default:
-    //             monsterAnim.run(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
-    //     }
-    //     ctx.closePath();
-    // }
+
 
     const monstersOnMove = {}
     if (!isObjEmpty(monsters)) {
@@ -748,12 +692,12 @@ function randomColor() {
                 monster = new Character(data.monsters[i].row, data.monsters[i].col);
                 monster.deleyMove = 600;
                 let monsterAnim;
-                monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
+                monsterAnim = new Sprite("../images/monster-" + 1 + ".png" , 3, 8);
         
                 monsterAnim.load(ctx);
                 monsterAnim.animate("40", 200, 0); // down
-                monsterAnim.animate("37", 200, 1); // right 
-                monsterAnim.animate("39", 200, 2); // left 
+                monsterAnim.animate("37", 200, 7); // right 
+                monsterAnim.animate("39", 200, 6); // left 
                 monsterAnim.animate("38", 200, 3); // up
 
                 monster.position = 
