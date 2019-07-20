@@ -7,7 +7,7 @@ let mapW = 20, mapH = 20;
 const powersKeys = { 69:0, 82:1 }
 let player;
 //let monster;
-
+let started = false;
 let players = [];
 let monsters = {};
 let socket;
@@ -193,6 +193,7 @@ function randomIntFromInterval(min,max) {
 
 
 function drawGame() {
+    console.log("drawing")
     const sec = Math.floor(Date.now() / 1000); // counting seconds
     const currentFrameTime = Date.now();
     const timeElapsed = currentFrameTime - lastFrameTime;
@@ -596,17 +597,21 @@ function drawGame() {
     }
 
    // if (monstersmonsters.length) {
-        socket.emit("move", { 
-            position: player.position, 
-            id: socket.id, 
-            characterState: { 
-                direction, 
-                lastDirection, 
-                characterIdx,
-                powerInState
-            },
-            monsters: monstersOnMove
-        });
+        if (started) {
+            console.log("move")
+            socket.emit("move", { 
+                position: player.position, 
+                id: socket.id, 
+                characterState: { 
+                    direction, 
+                    lastDirection, 
+                    characterIdx,
+                    powerInState
+                },
+                monsters: monstersOnMove
+            });
+        }
+
         
     
 
@@ -647,7 +652,7 @@ function randomColor() {
 
 
 
-
+    console.log("connection before move")
     socket = io.connect("http://localhost:3000");
 
 
@@ -686,49 +691,8 @@ function randomColor() {
 
     socket.on("heartbeat", data => {
         
-        players = data.players;
-        console.log("initial monsters")
-        if (Object.entries(monsters).length === 0 && monsters.constructor === Object) { // chexck if obj empty
-     
-            for (const i in data.monsters) {
-                if (data.monsters.hasOwnProperty(i)) {
-                    const element = data.monsters[i];
-                    monster = new Character(data.monsters[i].row, data.monsters[i].col);
-                    monster.deleyMove = 600;
-                    let monsterAnim;
-                    monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
-            
-                    monsterAnim.load(ctx);
-                    monsterAnim.animate("40", 200, 0); // down
-                    monsterAnim.animate("37", 200, 1); // right 
-                    monsterAnim.animate("39", 200, 2); // left 
-                    monsterAnim.animate("38", 200, 3); // up
-                    monsters[data.monsters[i].id] = {
-                        monsterAnim, 
-                        monster,
-                        monsterState: data.monsters[i].monsterState 
-                    }
-                }
-            }
-        }
-           // for (let i = 0; i < data.monsters.length; i++) {                
-                // monster = new Character(data.monsters[i].row, data.monsters[i].col);
-                // monster.deleyMove = 600;
-                // let monsterAnim;
-                // monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
-        
-                // monsterAnim.load(ctx);
-                // monsterAnim.animate("40", 200, 0); // down
-                // monsterAnim.animate("37", 200, 1); // right 
-                // monsterAnim.animate("39", 200, 2); // left 
-                // monsterAnim.animate("38", 200, 3); // up
-                // monsters[data.monsters[i].id] = {
-                //     monsterAnim, 
-                //     monster,
-                //     monsterState: data.monsters[i].monsterState 
-                // }
-            //}
-
+        if (started) {
+            players = data.players;
             for (const m in data.monsters) {
         
                 const monster = data.monsters[m];
@@ -740,16 +704,8 @@ function randomColor() {
                 monsters[m].id = monster.id
                 
             }
-        // data.monsters.forEach((monster, idx) => {
-            
-        //     monsters[monster.id].monsterState = monster.monsterState
-        //     monsters[monster.id].monster.position = monster.position
-        //     monsters[monster.id].monsterCharacterId = monster.monsterCharacterId
-        //     monsters[monster.id].row = monster.row
-        //     monsters[monster.id].col = monster.col
-        //     monsters[monster.id].id = monster.id
+        }
 
-        // });
         
     });
 
@@ -782,23 +738,60 @@ function randomColor() {
     createNewPowersAnim(herosPowers, 0, "69", 25)
     createNewPowersAnim(herosPowers, 1, "82", 20)
 
+    socket.on("start", data => {
+
+        console.log("on start", data.monsters)
+        for (const i in data.monsters) {
+            if (data.monsters.hasOwnProperty(i)) {
+                console.log("data.monsters[i]", data.monsters[i])
+                const element = data.monsters[i];
+                monster = new Character(data.monsters[i].row, data.monsters[i].col);
+                monster.deleyMove = 600;
+                let monsterAnim;
+                monsterAnim = new Sprite("../images/spritexb-" +1+ ".png" , 4, 4);
+        
+                monsterAnim.load(ctx);
+                monsterAnim.animate("40", 200, 0); // down
+                monsterAnim.animate("37", 200, 1); // right 
+                monsterAnim.animate("39", 200, 2); // left 
+                monsterAnim.animate("38", 200, 3); // up
+
+                monster.position = 
+                    data.monsters[i].position;
+
+                monsters[data.monsters[i].id] = {
+                    monsterAnim, 
+                    monster,
+                    monsterState: data.monsters[i].monsterState,
+                    id: data.monsters[i].id,
+                    row: data.monsters[i].row,
+                    col: data.monsters[i].col,
+                    monsterCharacterId: data.monsters[i].monsterCharacterId,
+                    position: data.monsters[i].position
+                    
+                }
+            }
+        }
+        started = true;
+
+        console.log("is started", started, monsters)
+    })
+
+    function start() {
+        console.log("start emit")
+        socket.emit("start", { 
+            position: player.position, id:socket.id, 
+            characterState: { 
+                direction, 
+                lastDirection, 
+                characterIdx, 
+                powerInState 
+            }
+        });
+    }
 
 
-    socket.emit("start", { 
-        position: player.position, id:socket.id, 
-        characterState: { 
-            direction, 
-            lastDirection, 
-            characterIdx, 
-            powerInState 
-        }, 
-        // monsters: monsters.map((monster, idx) => ({
-        //     id: idx,
-        //     position: monster.monster.position,
-        //     monsterState: monster.monsterState
-        // }))
-    });
-    
+    start();
 
 
 
