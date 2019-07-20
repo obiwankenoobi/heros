@@ -834,6 +834,12 @@ function randomColor() {
 
         if (fightKeyDown.hasOwnProperty(e.keyCode.toString())) {
             fightMoveInState = e.keyCode.toString();
+            for (const key in directionKeyDown) {
+               // if (key !== e.keyCode.toString()) {
+                    directionKeyDown[key] = false;
+             //   }
+                
+            }
            
         }
 
