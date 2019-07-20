@@ -780,7 +780,8 @@ function randomColor() {
     function start() {
         console.log("start emit")
         socket.emit("start", { 
-            position: player.position, id:socket.id, 
+            position: player.position, 
+            id: socket.id, 
             characterState: { 
                 direction, 
                 lastDirection, 

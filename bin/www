@@ -120,7 +120,7 @@ io.on('connection', socket => {
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
     socket.emit("start", { monsters });
-    console.log("monsters on start", monsters)
+   // console.log("monsters on start", monsters)
   });
 
   socket.on("move", data => {
@@ -130,7 +130,8 @@ io.on('connection', socket => {
       players[data.id].characterState = data.characterState;
     }
 
-    monsters = isObjEmpty(monsters) ? monsters : data.monsters;
+    monsters = data.monsters
+    console.log(monsters[0].position, socket.id)
   });
 
   socket.on('disconnect', () => {
