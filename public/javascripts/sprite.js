@@ -71,12 +71,12 @@ class Sprite {
             frames
         };
 
-        // console.log("name", name)
-        // console.log("frames", frames)
-        // console.log("path", this.path)
-        // console.log("=======================")
-        // console.log("=======================")
-        // console.log("=======================")
+        console.log("name", name)
+        console.log("frames", frames)
+        console.log("path", this.path)
+        console.log("=======================")
+        console.log("=======================")
+        console.log("=======================")
     }
 
     /**
@@ -105,7 +105,7 @@ class Sprite {
 
         if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
-        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
+        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x - 10, y - 20, this.frameWidth, this.frameHeight );
         
         if (!stop) {
             
