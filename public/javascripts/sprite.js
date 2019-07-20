@@ -24,43 +24,101 @@ class Sprite {
         this.frameWidth = Math.floor(this.width / this.totCols);
     }
 
-    animate(name, duration, row /* 0 based */) {
-        let frames = [];
+    // animate(name, duration, row /* 0 based */) {
+    //     let frames = [];
  
-        let xStart = 0;
-        let yStart = row * this.frameHeight;
-        let xEnd = Math.floor(this.width / this.totCols);
-        let yEnd = Math.floor((this.height / this.totRows) + this.frameHeight);
+    //     let xStart = 0;
+    //     let yStart = row * this.frameHeight;
+    //     let xEnd = Math.floor(this.width / this.totCols);
+    //     let yEnd = Math.floor((this.height / this.totRows) + this.frameHeight);
 
-        for (let i = 1; i <= this.totCols; i++) {
+    //     for (let i = 1; i <= this.totCols; i++) {
+    //         frames.push({ xStart, yStart, xEnd, yEnd })
+    //         xStart = xEnd;
+    //         xEnd = this.frameWidth * i + this.frameWidth
+    //     }
+    //     this.animations[name] = {
+    //         duration,
+    //         frames
+    //     };
+    // }
+
+    animate(name, duration, row /* 0 based */, startAtCol = 0, endAtCol = this.totCols) {
+
+        let frames = [];
+
+        let xStart = this.frameWidth * startAtCol;
+        let yStart = row * this.frameHeight;
+        
+        let xEnd = this.frameWidth * startAtCol + this.frameWidth;
+        let yEnd = this.frameHeight * row + this.frameHeight;
+  
+        
+        console.log("name", name)
+        
+        for (let i = startAtCol; i < endAtCol; i++) {
+            console.log(i, {xStart, xEnd})
             frames.push({ xStart, yStart, xEnd, yEnd })
             xStart = xEnd;
-            xEnd = this.frameWidth * i + this.frameWidth
+            xEnd = this.frameWidth * (i + 1) + this.frameWidth
+            
         }
+        console.log("frames", frames)
+
+       // console.log(debuggingArr)
         this.animations[name] = {
             duration,
             frames
         };
+
+        // console.log("name", name)
+        // console.log("frames", frames)
+        // console.log("path", this.path)
+        // console.log("=======================")
+        // console.log("=======================")
+        // console.log("=======================")
     }
 
-    run(x, y, animationName, stop = false, stopAt = this.animations[animationName].frames.length) {
-        //console.log(x, y, animationName, this.animations)
+    /**
+     * 
+     * @param {Number} x - X position to draw the animation
+     * @param {Number} y - Y position to draw the animation
+     * @param {String} animationName - Name of animation
+     * @param {Boolean} stop - to stop animation
+     * @param {Number} startAt - Index to start animation at
+     * @param {Number} stopAt - Index to end animation at
+     */
+    run(x, y, animationName, stop = false) {
+        //if (this.next > stopAt) { this.next = startAt; console.log("resetting"); }
         const now = new Date().getTime()
         const anim = this.animations[animationName]
-        console.log("this.next", this.next)
-        console.log("anim.frames", anim.frames)
-        console.log("anim.frames[this.next];", anim.frames[this.next])
-        console.log("stopAt", stopAt)
 
+        // console.log("-------------------------------")
+        // console.log("-------------------------------")
+        // console.log("-------------------------------")
+        // console.log("anim.frames", anim.frames)
+        // console.log("anim.frames[this.next];", anim.frames[this.next])
+        // console.log("anim", anim)
+        // console.log("animationName", animationName)
+        // console.log("this.next", this.next)
+        // console.log("anim.length - 1", anim.frames.length - 1)
+
+        if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
+        
         if (!stop) {
+            
             if (now - this.lastFrameTime >= anim.duration) {
                 this.next++;
                 this.lastFrameTime = new Date().getTime();
-                if (this.next === stopAt) { this.next = 0; }
             }
+           
         }
+    }
+
+    reset() {
+        this.next = 0
     }
 }
 
