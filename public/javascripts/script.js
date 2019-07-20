@@ -3,35 +3,34 @@
 const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
 const viewport = new Viewport(tileW, tileH)
-let mapW = 20, mapH = 20;
+let mapW = 20, mapH = 20; // width and height of map
 
-let player;
-//let monster;
-let started = false;
-let players = [];
-let monsters = {};
-let socket;
-let currentSecond = 0, frameCount = 0, framesLastSecond = 0;
-let lastFrameTime = 0;
-let hero;
+let keyDownPressedTime; // when key was pressed
+let keyUpPressedTime; // when key was up
+let player; // my player (Character object)
 
-let monsterDirection = "40";
-let powerInState = "";
-let fightMoveInState = "";
+let started = false; // if game started
+let players = []; // array of players in the game
+let monsters = {}; // object of monsters in the game
+let socket; // socket instance
+let currentSecond = 0, frameCount = 0, framesLastSecond = 0; // frames count
+let lastFrameTime = 0; // last frame time in ms
+//let hero;
 
-let direction = "40";
-let lastDirection = "40";
-let lastDirectionLeftRight = "37"
+let monsterDirection = "40"; // monster direction (need to check if needed)
+let powerInState = ""; // current power move in state
+let fightMoveInState = ""; // current fight move in state
 
-// let directionMonster = "40";
-// let lastDirectionMonster = "40";
+let direction = "40"; // current direction
+let lastDirection = "40"; // last direction that we moved to
+let lastDirectionLeftRight = "37" // last diretion which was left or right
 
-let heros = [];
-let herosOnline = [];
-let herosPowers = [];
-let arrOfMonsters = [];
-let herosPowersOnline = [];
-let characterIdx;
+
+let heros = []; // array of heros to choose from (Character obj[])
+let herosOnline = []; // array of heros to choose from for online players (Character obj[]) 
+let herosPowers = []; // Sprite[] for powers
+let herosPowersOnline = [];// Sprite[] for powers for online users
+let characterIdx; 
 
 
 const characters= [
@@ -287,7 +286,8 @@ function drawGame() {
                         if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
                             // up
                             monster.tileTo[1] -= 1;
-                        } else {
+                        } 
+                        else {
                             monsterDirection = null;
                         }
             
@@ -297,7 +297,8 @@ function drawGame() {
                         if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] + 1)]]) {
                             // down
                             monster.tileTo[1] += 1;
-                        } else {
+                        } 
+                        else {
                             monsterDirection = null;
                         }
                     } 
@@ -306,7 +307,8 @@ function drawGame() {
                         if (safeAreas[gameMap[toIndex(monster.tileFrom[0] - 1, monster.tileFrom[1])]]) {
                             // right
                             monster.tileTo[0] -= 1;
-                        } else {
+                        } 
+                        else {
                             monsterDirection = null;
                         }
                     } 
@@ -709,8 +711,8 @@ function randomColor() {
         hero.animate("37", 100, 6, 0, 3); // right 
         hero.animate("39", 100, 7, 0, 3); // left 
         hero.animate("38", 100, 7, 0, 3); // up
-        hero.animate("81", 100, 0, 3); // q (fight - left)
-        hero.animate("811", 100, 8, 0, 3); // q (fight - right)
+        hero.animate("81", 100, 1, 3); // q (fight - left)
+        hero.animate("811", 100, 9, 0, 3); // q (fight - right)
         heros.push({ hero, direction, lastDirection });
     }
 
@@ -725,8 +727,8 @@ function randomColor() {
         hero.animate("37", 100, 6, 0, 3); // right 
         hero.animate("39", 100, 7, 0, 3); // left 
         hero.animate("38", 100, 7, 0, 3); // up
-        hero.animate("81", 100, 0, 3); // q (fight - left)
-        hero.animate("811", 100, 8, 0, 3); // q (fight - right)
+        hero.animate("81", 100, 1, 3); // q (fight - left)
+        hero.animate("811", 100, 9, 0, 3); // q (fight - right)
         herosOnline.push({ hero, direction, lastDirection });
     }
      
@@ -844,6 +846,7 @@ function randomColor() {
     window.addEventListener("keydown", e => {
         console.log(e.keyCode)
         if (e.keyCode >= 37 && e.keyCode <= 40) {
+            const now = new Date().getTime()
 
             // remember if left or right was lasrt direction
             if (e.keyCode === 37 || e.keyCode === 39) {
