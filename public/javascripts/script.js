@@ -410,7 +410,40 @@ function drawGame() {
                 power.run(viewport.offset[0] + players[key].position[0] + powersOffSetX, viewport.offset[1] + players[key].position[1] + powersOffSetY, characterState.powerInState);
             }
 
-            switch(characterState.direction) {
+            if (characterState.fightMoveInState) {
+                console.log("characterState.fightMoveInState", characterState.fightMoveInState)
+                let fightingOffSetX = 0;
+                let fightingOffSetY = 0;
+                
+                switch(characterState.fightMoveInState) {
+        
+                    case "81": {
+                  
+                        fightingOffSetX = 0;
+                        fightingOffSetY = 0;
+                        if (characterState.lastDirectionLeftRight === 37) {
+                            console.log("lastDirectionLeftRight", characterState.lastDirectionLeftRight)
+                            hero.run(
+                                viewport.offset[0] + players[key].position[0]  + fightingOffSetX, 
+                                viewport.offset[1] + players[key].position[1]  + fightingOffSetY, 
+                                "81", false);
+                        } else {
+                            hero.run(
+                                viewport.offset[0] + players[key].position[0]  + fightingOffSetX, 
+                                viewport.offset[1] + players[key].position[1]  + fightingOffSetY, 
+                                "811", false);
+                        }
+        
+                        break;
+                    }
+
+                    default:
+                }
+        
+            } else {
+                // we put this block here to prevent the animation to start when
+                // the animation of fighting is on
+               switch(characterState.direction) {
                 case 37:
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"37");
                     break;
@@ -430,6 +463,10 @@ function drawGame() {
                 default:
                     hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true);
             }
+            }
+
+
+
             ctx.closePath();
 
         }
@@ -486,16 +523,11 @@ function drawGame() {
 
                 break;
             }
-            case "1": {
-                fightingOffSetX = 0;
-                fightingOffSetY = 0;
-                break;
-            }
+
             default:
         }
 
     } else {
-        
         const { hero } = heros[characterIdx];
         hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
     }
@@ -612,7 +644,9 @@ function drawGame() {
                     direction, 
                     lastDirection, 
                     characterIdx,
-                    powerInState
+                    powerInState,
+                    lastDirectionLeftRight,
+                    fightMoveInState
                 },
                 monsters: monstersOnMove
             });
