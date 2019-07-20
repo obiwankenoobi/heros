@@ -31,6 +31,7 @@ let arrOfMonsters = [];
 let herosPowersOnline = [];
 let characterIdx;
 
+
 const characters= [
     "../images/spritexb-1.png",
     "../images/spritexb-2.png",
@@ -38,6 +39,8 @@ const characters= [
     "../images/spritexb-4.png",
     "../images/spritexb-5.png",
 ];
+
+
 const powers = [
     "../images/power-0.png",
     "../images/power-1.png"
@@ -396,23 +399,23 @@ function drawGame() {
 
             switch(characterState.direction) {
                 case 37:
-                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"37");
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"37", false, 2);
                     break;
         
                 case 38:;
-                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"38");
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"38", false, 2);
                     break;
         
                 case 39:
-                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"39");
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"39", false, 2);
                     break;
         
                 case 40:
-                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"40");
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],"40", false, 2);
                     break;
         
                 default:
-                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true);
+                    hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true, 2);
             }
             ctx.closePath();
 
@@ -449,23 +452,23 @@ function drawGame() {
     switch(direction) {
         
         case 37:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37");
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"37", false, 2);
             break;
 
         case 38:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"38");
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"38", false, 2);
             break;
 
         case 39:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"39");
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"39", false, 2);
             break;
 
         case 40:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"40");
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],"40", false, 2);
             break;
 
         default:
-            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
+            hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true, 2);
     }
     ctx.closePath();
 
@@ -607,12 +610,12 @@ function randomColor() {
      */
     for (let idx = 0; idx < characters.length; idx++) {
         let hero;
-        hero = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        hero = new Sprite("../images/spritexb-" + idx + ".png" , 6, 8);
         hero.load(ctx);
-        hero.animate("40", 100, 0); // down
-        hero.animate("37", 100, 1); // right 
-        hero.animate("39", 100, 2); // left 
-        hero.animate("38", 100, 3); // up
+        hero.animate("40", 100, 6); // down
+        hero.animate("37", 100, 6); // right 
+        hero.animate("39", 100, 7); // left 
+        hero.animate("38", 100, 7); // up
         heros.push({ hero, direction, lastDirection });
     }
 
@@ -621,12 +624,12 @@ function randomColor() {
      */
     for (let idx = 0; idx < characters.length; idx++) {
         let hero;
-        hero = new Sprite("../images/spritexb-" + idx + ".png" , 4, 4);
+        hero = new Sprite("../images/spritexb-" + idx + ".png" , 6, 8);
         hero.load(ctx);
-        hero.animate("40", 100, 0); // down
-        hero.animate("37", 100, 1); // right 
-        hero.animate("39", 100, 2); // left 
-        hero.animate("38", 100, 3); // up
+        hero.animate("40", 100, 6); // down
+        hero.animate("37", 100, 6); // right 
+        hero.animate("39", 100, 7); // left 
+        hero.animate("38", 100, 7); // up
         herosOnline.push({ hero, direction, lastDirection });
     }
      

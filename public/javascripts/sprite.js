@@ -43,17 +43,22 @@ class Sprite {
         };
     }
 
-    run(x, y, animationName, stop = false) {
+    run(x, y, animationName, stop = false, stopAt = this.animations[animationName].frames.length) {
         //console.log(x, y, animationName, this.animations)
         const now = new Date().getTime()
         const anim = this.animations[animationName]
+        console.log("this.next", this.next)
+        console.log("anim.frames", anim.frames)
+        console.log("anim.frames[this.next];", anim.frames[this.next])
+        console.log("stopAt", stopAt)
+
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x, y - 16, this.frameWidth, this.frameHeight );
         if (!stop) {
             if (now - this.lastFrameTime >= anim.duration) {
                 this.next++;
                 this.lastFrameTime = new Date().getTime();
-                if (this.next >= anim.frames.length) { this.next = 0; }
+                if (this.next === stopAt) { this.next = 0; }
             }
         }
     }
