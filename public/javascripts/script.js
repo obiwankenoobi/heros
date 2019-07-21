@@ -12,7 +12,7 @@ let player; // my player (Character object)
 let started = false; // if game started
 let players = []; // array of players in the game
 let monsters = {}; // object of monsters in the game
-let monstersKilled = {} // object will monsters killed that need to respawn
+//let monstersKilled = {} // object will monsters killed that need to respawn
 let socket; // socket instance
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0; // frames count
 let lastFrameTime = 0; // last frame time in ms
@@ -258,9 +258,9 @@ function drawGame() {
                         monsters[i].tileTo[1] - 1 === player.tileTo[1] && // monster is right to player
                         lastDirection === "40") 
                     ) {
-                        monstersKilled[i] = monsters[i];
-                        delete monsters[i];
-                        console.log(monstersKilled)
+                       // monstersKilled[i] = monsters[i];
+                        monsters[i].isDead = true;
+                    
                     }
             }
 
@@ -703,49 +703,50 @@ function drawGame() {
      for (const m in monsters) {
 
          if (monsters.hasOwnProperty(m)) {
-            const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster, monsterCharacterId } = monsters[m];
-            let monsterOffSetX = 0;
-            let monsterOffSetY = 0;
-            switch(monsterCharacterId) {
-                case 0: {
-                    monsterOffSetX = 0;
-                    monsterOffSetY = 0;
-                    breakmonster
+             if (!monsters[m].isDead) {             
+                const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster, monsterCharacterId } = monsters[m];
+                let monsterOffSetX = 0;
+                let monsterOffSetY = 0;
+                switch(monsterCharacterId) {
+                    case 0: {
+                        monsterOffSetX = 0;
+                        monsterOffSetY = 0;
+                        breakmonster
+                    }
+                    case 1: {
+                        monsterOffSetX = 5;
+                        monsterOffSetY = 20;
+                        break;
+                    }
                 }
-                case 1: {
-                    monsterOffSetX = 5;
-                    monsterOffSetY = 20;
-                    break;
-                }
-            }
 
 
-            ctx.beginPath();
-            ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
-            
-            switch(directionMonster) {
+                ctx.beginPath();
+                ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
                 
-                case 37:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "37");
-                    break;
-        
-                case 38:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "38");
-                    break;
-        
-                case 39:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "39");
-                    break;
-        
-                case 40:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "40");
-                    break;
-        
-                default:
-                    monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+                switch(directionMonster) {
+                    
+                    case 37:
+                        monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "37");
+                        break;
+            
+                    case 38:
+                        monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "38");
+                        break;
+            
+                    case 39:
+                        monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "39");
+                        break;
+            
+                    case 40:
+                        monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1] + monsterOffSetY , "40");
+                        break;
+            
+                    default:
+                        monsterAnim.run(viewport.offset[0] + monster.position[0] + monsterOffSetX, viewport.offset[1] + monster.position[1], lastDirectionMonster, true);
+                }
+                ctx.closePath();
             }
-            ctx.closePath();
-             
          }
      }
 
@@ -759,8 +760,11 @@ function drawGame() {
                 position: monsters[monster].monster.position,
                 monsterState: monsters[monster].monsterState,
                 monsterCharacterId: monsters[monster].monsterCharacterId,
-                tileTo:monsters[monster].monster.tileTo
+                tileTo:monsters[monster].monster.tileTo,
+                isDead:monsters[monster].isDead
             }
+
+            console.log("monsters[monster].isDead on move", monsters[monster].isDead)
         }
 
     }
@@ -783,8 +787,9 @@ function drawGame() {
                     col: player.tileTo[1]
                 },
                 monsters: monstersOnMove,
-                monstersKilled
             });
+
+
         }
 
         
@@ -920,9 +925,7 @@ function randomColor() {
             
             for (const m in data.monsters) {
                 // deleting monster that has been killed from client
-                if (data.monstersKilled[m]) {
-                    delete monsters[m];
-                }
+
                 if (monsters[m]) {
                     const monster = data.monsters[m];
                     monsters[m].monsterState = monster.monsterState
@@ -930,6 +933,9 @@ function randomColor() {
                     monsters[m].monsterCharacterId = monster.monsterCharacterId
                     monsters[m].tileTo = monster.tileTo
                     monsters[m].id = monster.id
+                    monsters[m].isDead = monster.isDead;
+
+                
                 } 
             }
         }
@@ -992,8 +998,8 @@ function randomColor() {
                     id: data.monsters[i].id,
                     tileTo: data.monsters[i].tileTo,
                     monsterCharacterId: data.monsters[i].monsterCharacterId,
-                    position: data.monsters[i].position
-                    
+                    position: data.monsters[i].position,
+                    isDead:data.monsters[i].isDead
                 }
             }
         }

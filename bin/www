@@ -40,15 +40,28 @@ function Player(id, position, characterState) {
   this.characterState = characterState;
 }
 
-function Monster(id, position, monsterState, monsterCharacterId, tileTo) {
+function Monster(id, position, monsterState, monsterCharacterId, tileTo, isDead) {
   this.id = id;
   this.position = position;
   this.monsterState = monsterState;
   this.monsterCharacterId = monsterCharacterId;
   this.tileTo = tileTo;
+  this.isDead = isDead
 
 }
-////
+
+function respawn() {
+  if (Object.keys(monstersKilled).length) {
+    const next = Object.keys(monstersKilled).shift()
+    console.log(next, "monsters[next].isDead", monsters[next].isDead)
+    monsters[next].isDead = false 
+    delete monstersKilled[next]
+    console.log(next, "monsters[next].isDead", monsters[next].isDead)
+    console.log(next, Object.keys(monstersKilled))
+    console.log("monstersKilled", monstersKilled)
+  }
+}
+
 function monstersInit(monsters) {
 
   for (let i = 0; i < 5; i++) {
@@ -62,7 +75,7 @@ function monstersInit(monsters) {
       directionMonster:"40", 
       lastDirectionMonster:"40", 
     }
-    const monster = new Monster(i, [45, 45], monsterState, 1, [1,1])
+    const monster = new Monster(i, [45, 45], monsterState, 1, [1,1], false)
     monsters[i] = monster;
   }
 
@@ -116,37 +129,42 @@ function heartBeat() {
 monstersInit(monsters); 
 monstersInitMovment(monsters);
 setInterval(heartBeat, 1000 / 30);
+setInterval(respawn, 1000 * 10);
 
 io.on('connection', socket => {
   
   socket.on("start", data => {
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
-    console.log("monsters on start", monsters)
+    
     socket.emit("start", { monsters });
-   // console.log("monsters on start", monsters)
+   
   });
 
   socket.on("move", data => {
-
+    //console.log("data.monster", data.monster)
     if (players[data.id]) {
       players[data.id].position = data.position;
       players[data.id].characterState = data.characterState;
-      
-
-      // updating the monsters that needs to respawn
-      for (const i in data.monstersKilled) {
-        if (data.monstersKilled.hasOwnProperty(i)) {
-          const monster = data.monstersKilled[i];
-          monstersKilled[i] = monster;
+      for (const i in data.monsters) { 
+        
+        //console.log("data.monsters", data.monsters[i])
+        if (data.monsters[i].isDead) {
+          monstersKilled[i] = true;
+        } else {
+          //delete monstersKilled[i]
         }
+        
       }
-
+      
 
     }
 
+    
+    
+    //monstersKilled = data.monstersKilled;
     monsters = data.monsters;
-  //  console.log("monsters", Object.keys(monsters).length)
+    
   });
 
   socket.on('disconnect', () => {
