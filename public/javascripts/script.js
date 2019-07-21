@@ -237,24 +237,27 @@ function drawGame() {
 
 
             if (fightMoveInState) {
-                console.log("====================================")
-                console.log("====================================")
-                console.log("====================================")
-                console.log("====================================")
 
+                if (
+                    // monsteer from ours right
+                    (monsters[i].tileTo[0] - 1 === player.tileTo[0] && // monster one tile right to us
+                    monsters[i].tileTo[1]  === player.tileTo[1] && 
+                    lastDirection === "39") || 
 
-                console.log("player.tileTo[1]", player.tileTo[1])
-                console.log("player.tileTo[0]", player.tileTo[0])
+                    // monster form our left
+                    (monsters[i].tileTo[0] + 1 === player.tileTo[0] && // monster one tile left to us
+                        monsters[i].tileTo[1]  === player.tileTo[1] && // monster is right to player
+                        lastDirection === "37") ||
 
+                    // monster form our top
+                    (monsters[i].tileTo[0]  === player.tileTo[0] && // monster one tile left to us
+                        monsters[i].tileTo[1] + 1 === player.tileTo[1] && // monster is right to player
+                        lastDirection === "38") ||
 
-                console.log("====================================")
-
-
-                console.log("monsters[i].tileTo[1]", monsters[i].tileTo[1])
-                console.log("monsters[i].tileTo[0] - 1", monsters[i].tileTo[0] - 1)
-                if (monsters[i].tileTo[0] - 1 === player.tileTo[0] && // monster and player on same x
-                    monsters[i].tileTo[1]  === player.tileTo[1] && // monster is right to player
-                    lastDirection === "39" // and direction is to the right
+                    // monster form our bottom
+                    (monsters[i].tileTo[0]  === player.tileTo[0] && // monster one tile left to us
+                        monsters[i].tileTo[1] - 1 === player.tileTo[1] && // monster is right to player
+                        lastDirection === "40") 
                     ) {
                         monstersKilled[i] = monsters[i];
                         delete monsters[i];
