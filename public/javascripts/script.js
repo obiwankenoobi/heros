@@ -237,7 +237,6 @@ function drawGame() {
 
 
             if (fightMoveInState) {
-
                 if (
                     // monsteer from ours right
                     (monsters[i].tileTo[0] - 1 === player.tileTo[0] && // monster one tile right to us
