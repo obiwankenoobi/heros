@@ -503,6 +503,7 @@ function drawGame() {
      */
 
     if (direction) {
+        console.log("heros[characterIdx]", heros)
         const { hero } = heros[characterIdx]; 
         ctx.beginPath();
         let playerOffSetX = 0;
@@ -565,18 +566,51 @@ function drawGame() {
           
                 fightingOffSetX = 0;
                 fightingOffSetY = 0;
-                if (lastDirectionLeftRight === 37) {
-                    console.log("lastDirectionLeftRight", lastDirectionLeftRight)
+                console.log("lastDirection", lastDirection)
+                switch (lastDirection) {
+                    case "37":
                     hero.run(
                         viewport.offset[0] + player.position[0] + fightingOffSetX, 
                         viewport.offset[1] + player.position[1] + fightingOffSetY, 
                         "81", false);
-                } else {
+                    break;
+        
+                case "38":
+                    hero.run(
+                        viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                        viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                        "8111", false);
+                    break;
+        
+                case "39":
                     hero.run(
                         viewport.offset[0] + player.position[0] + fightingOffSetX, 
                         viewport.offset[1] + player.position[1] + fightingOffSetY, 
                         "811", false);
+                    break;
+        
+                case "40":
+                    hero.run(
+                        viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                        viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                        "81111", false);
+                    break;
+        
+                default:
+                    break;
                 }
+                // if (lastDirectionLeftRight === 37) {
+                //     console.log("lastDirectionLeftRight", lastDirectionLeftRight)
+                //     hero.run(
+                //         viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                //         viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                //         "81", false);
+                // } else {
+                //     hero.run(
+                //         viewport.offset[0] + player.position[0] + fightingOffSetX, 
+                //         viewport.offset[1] + player.position[1] + fightingOffSetY, 
+                //         "811", false);
+                // }
 
                 break;
             }
@@ -757,16 +791,19 @@ function randomColor() {
      */
     for (let idx = 0; idx < characters.length; idx++) {
         let hero;
-        hero = new Sprite("../images/spritexb-" + idx + ".png" , 6, 16);
+        hero = new Sprite("../images/spritexb-" + idx + ".png" , 13, 21);
         hero.load(ctx);
-        hero.animate("40", 100, 6, 0, 3); // down
-        hero.animate("37", 100, 6, 0, 3); // right 
-        hero.animate("39", 100, 7, 0, 3); // left 
-        hero.animate("38", 100, 7, 0, 3); // up
-        hero.animate("81", 100, 1, 3); // q (fight - left)
-        hero.animate("811", 100, 9, 0, 3); // q (fight - right)
-        hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
-        hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
+        hero.animate("40", 100, 10, 0, 9); // down
+        hero.animate("37", 100,  9, 0, 9); // left 
+        hero.animate("39", 100, 11, 0, 9); // right 
+        hero.animate("38", 100,  8, 0, 9); // up
+
+        hero.animate("81", 100, 5, 0, 8); // q (fight - left)
+        hero.animate("811", 100, 7, 0, 8); // q (fight - right)
+        hero.animate("8111", 100, 4, 0, 8); // q (fight - up)
+        hero.animate("81111", 100, 6, 0, 8); // q (fight - dowm)
+        // hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
+        // hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
         heros.push({ hero, direction, lastDirection });
     }
 
@@ -777,14 +814,17 @@ function randomColor() {
         let hero;
         hero = new Sprite("../images/spritexb-" + idx + ".png" , 6, 16);
         hero.load(ctx);
-        hero.animate("40", 100, 6, 0, 3); // down
-        hero.animate("37", 100, 6, 0, 3); // right 
-        hero.animate("39", 100, 7, 0, 3); // left 
-        hero.animate("38", 100, 7, 0, 3); // up
-        hero.animate("81", 100, 1, 3); // q (fight - left)
-        hero.animate("811", 100, 9, 0, 3); // q (fight - right)
-        hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
-        hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
+        hero.animate("40", 100, 10, 0, 9); // down
+        hero.animate("37", 100,  9, 0, 9); // left 
+        hero.animate("39", 100, 11, 0, 9); // right 
+        hero.animate("38", 100,  8, 0, 9); // up
+
+        hero.animate("81", 100, 5, 0, 8); // q (fight - left)
+        hero.animate("811", 100, 7, 0, 8); // q (fight - right)
+        hero.animate("8111", 100, 4, 0, 8); // q (fight - up)
+        hero.animate("81111", 100, 6, 0, 8); // q (fight - dowm)
+        // hero.animate("underAttackRight", 100, 2, 0, 3); // under attack - right
+        // hero.animate("underAttackLeft", 100, 10, 4); // under attack - left
         herosOnline.push({ hero, direction, lastDirection });
     }
      
