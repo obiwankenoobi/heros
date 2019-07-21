@@ -222,6 +222,7 @@ function drawGame() {
     };
 
     if (sec !== currentSecond) { 
+        console.log(player.tileTo)
         currentSecond = sec; 
         framesLastSecond = frameCount;
         frameCount = 1;
@@ -232,13 +233,37 @@ function drawGame() {
                 
                 underAttack = true;
             } 
-            if (monsters[i].row === player.tileTo[0] &&
-                monsters[i].col === player.tileTo[1] &&
-                fightMoveInState) {
-                    monstersKilled[i] = monsters[i];
-                    delete monsters[i];
-                    console.log(monstersKilled)
-                }
+
+
+
+            if (fightMoveInState) {
+                console.log("====================================")
+                console.log("====================================")
+                console.log("====================================")
+                console.log("====================================")
+                console.log("player.tileTo[1] + 1", player.tileTo[1] + 1)
+                console.log("player.tileTo[0]", player.tileTo[0])
+                console.log("monsters[i].row", monsters[i].row)
+                console.log("monsters[i].col", monsters[i].col)
+                if (monsters[i].row === player.tileTo[0] && // monster and player on same row
+                    monsters[i].col === player.tileTo[1] + 1 && // monster is right to player
+                    lastDirection === "39" // and direction is to the right
+                    ) {
+                        monstersKilled[i] = monsters[i];
+                        delete monsters[i];
+                        console.log(monstersKilled)
+                    }
+            }
+
+
+
+            // if (monsters[i].row === player.tileTo[0] &&
+            //     monsters[i].col === player.tileTo[1] &&
+            //     fightMoveInState) {
+            //         monstersKilled[i] = monsters[i];
+            //         delete monsters[i];
+            //         console.log(monstersKilled)
+            //     }
         }
     } else {
         frameCount++;
