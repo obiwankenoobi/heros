@@ -71,29 +71,29 @@ const fightKeyDown = {
 }
 
 class Character {
-   constructor(row, col) {
-       this.tileFrom    = [row, col];   // where player come from [row, col]
-       this.tileTo      = [row, col];   // where player is going [row, col]
+   constructor(x, y) {
+       this.tileFrom    = [x, y];   // where player come from [x, y]
+       this.tileTo      = [x, y];   // where player is going [x, y]
        this.timeMoved   = 0;            // when movment started
        this.dimentsions = [32, 32];     // size of character [width, height]
-       this.position    = [this.calcPosition(row, col)[0], this.calcPosition(row, col)[1]];     // position in [x, y] relative to top-left corner
+       this.position    = [this.calcPosition(x, y)[0], this.calcPosition(x, y)[1]];     // position in [x, y] relative to top-left corner
        this.deleyMove   = 400;          // how long it take to move 1 tile in ml
    } 
 
 
-   calcPosition(row, col) {
+   calcPosition(x, y) {
         return  [
-            row * tileW + (tileW - this.dimentsions[0]) / 2,
-            col * tileH + (tileH - this.dimentsions[1]) / 2
+            x * tileW + (tileW - this.dimentsions[0]) / 2,
+            y * tileH + (tileH - this.dimentsions[1]) / 2
         ]
    }
 
-   placeAt(row, col) {
-        this.tileFrom = [row, col];
-        this.tileTo   = [row, col];
+   placeAt(x, y) {
+        this.tileFrom = [x, y];
+        this.tileTo   = [x, y];
         this.position = [
-            (row * tileW) + ((tileW - this.dimentsions[0]) / 2), 
-            (col * tileH) + ((tileH - this.dimentsions[1]) / 2)
+            (x * tileW) + ((tileW - this.dimentsions[0]) / 2), 
+            (y * tileH) + ((tileH - this.dimentsions[1]) / 2)
         ];
    }
 
@@ -241,12 +241,19 @@ function drawGame() {
                 console.log("====================================")
                 console.log("====================================")
                 console.log("====================================")
-                console.log("player.tileTo[1] + 1", player.tileTo[1] + 1)
+
+
+                console.log("player.tileTo[1]", player.tileTo[1])
                 console.log("player.tileTo[0]", player.tileTo[0])
-                console.log("monsters[i].row", monsters[i].row)
+
+
+                console.log("====================================")
+
+
                 console.log("monsters[i].col", monsters[i].col)
-                if (monsters[i].row === player.tileTo[0] && // monster and player on same row
-                    monsters[i].col === player.tileTo[1] + 1 && // monster is right to player
+                console.log("monsters[i].row - 1", monsters[i].row - 1)
+                if (monsters[i].row - 1 === player.tileTo[0] && // monster and player on same row
+                    monsters[i].col  === player.tileTo[1] && // monster is right to player
                     lastDirection === "39" // and direction is to the right
                     ) {
                         monstersKilled[i] = monsters[i];
