@@ -106,7 +106,7 @@ class Sprite {
 
         if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
-        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x - 10, y - 20, this.frameWidth, this.frameHeight );
+        this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x - 15, y - 30, this.frameWidth, this.frameHeight );
         
         if (!stop) {
             
