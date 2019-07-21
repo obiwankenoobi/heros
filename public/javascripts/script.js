@@ -408,12 +408,12 @@ function drawGame() {
                 switch(powersKeys[characterState.powerInState]) {
                     case 0: {
                         powersOffSetX = - 18;
-                        powersOffSetY = - 8;
+                        powersOffSetY = - 10;
                         break;
                     }
                     case 1: {
                         powersOffSetX = - 16;
-                        powersOffSetY = 5;
+                        powersOffSetY = 11;
                         break;
                     }
                 }
@@ -526,6 +526,7 @@ function drawGame() {
      ** Drawing player
      */
 
+     
     if (powerInState) {
         let powersOffSetX = 0;
         let powersOffSetY = 0;
@@ -533,12 +534,12 @@ function drawGame() {
         switch(powersKeys[powerInState]) {
             case 0: {
                 powersOffSetX = - 18;
-                powersOffSetY = - 8;
+                powersOffSetY = - 10;
                 break;
             }
             case 1: {
                 powersOffSetX = - 16;
-                powersOffSetY = 5;
+                powersOffSetY = 11;
                 break;
             }
         }
@@ -547,9 +548,10 @@ function drawGame() {
 
     } 
 
-
+    console.log("direction", direction)
+    console.log("powerInState", powerInState)
     if (direction) {
-        console.log("heros[characterIdx]", heros)
+
         const { hero } = heros[characterIdx]; 
         ctx.beginPath();
         let playerOffSetX = 0;
@@ -625,6 +627,7 @@ function drawGame() {
             }
 
             default:
+                break;
         }
 
     } else if (underAttack) {
@@ -665,16 +668,17 @@ function drawGame() {
 
          if (monsters.hasOwnProperty(m)) {
             const { monsterAnim, monsterState: { lastDirectionMonster, directionMonster }, monster, monsterCharacterId } = monsters[m];
-
+            let monsterOffSetX = 0;
+            let monsterOffSetY = 0;
             switch(monsterCharacterId) {
                 case 0: {
-                    monsterOffSetX = -34;
-                    monsterOffSetY = -22;
+                    monsterOffSetX = 0;
+                    monsterOffSetY = 0;
                     breakmonster
                 }
                 case 1: {
-                    monsterOffSetX = 0;
-                    monsterOffSetY = 0;
+                    monsterOffSetX = 5;
+                    monsterOffSetY = 20;
                     break;
                 }
             }
@@ -682,6 +686,7 @@ function drawGame() {
 
             ctx.beginPath();
             ctx.rect(viewport.offset[0] + monster.position[0], viewport.offset[1] + monster.position[1], monster.dimentsions, monster.dimentsions);
+            
             switch(directionMonster) {
                 
                 case 37:
@@ -978,9 +983,15 @@ function randomColor() {
     
     window.addEventListener("keydown", e => {
         console.log(e.keyCode)
-        if (e.keyCode >= 37 && e.keyCode <= 40) {
-            const now = new Date().getTime()
 
+        // powers keys
+        if (powersKeys.hasOwnProperty(e.keyCode.toString())) {
+            powerInState = e.keyCode.toString();
+        }
+
+
+        if (e.keyCode >= 37 && e.keyCode <= 40 && !fightMoveInState) { 
+            // {!fightMoveInState} wont allow walk and fight togeaher
             // remember if left or right was lasrt direction
             if (e.keyCode === 37 || e.keyCode === 39) {
                 lastDirectionLeftRight = e.keyCode;
@@ -996,11 +1007,13 @@ function randomColor() {
             }
 
             // reset all key pressed except the current one
-            for (const key in directionKeyDown) {
-                if (key !== e.keyCode.toString()) {
-                    directionKeyDown[key] = false;
-                }
-            }
+            // (seems that we dont need it)
+            
+            // for (const key in directionKeyDown) {
+            //     if (key !== e.keyCode.toString()) {
+            //         directionKeyDown[key] = false;
+            //     }
+            // }
         }
 
         // speed up
@@ -1020,10 +1033,7 @@ function randomColor() {
            
         }
 
-        // powers keys
-        if (powersKeys.hasOwnProperty(e.keyCode.toString())) {
-            powerInState = e.keyCode.toString();
-        }
+
 
 
     });
