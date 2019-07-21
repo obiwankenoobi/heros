@@ -502,7 +502,39 @@ function drawGame() {
      ** Drawing player
      */
 
-    if (powerInState) {
+    if (direction) {
+        const { hero } = heros[characterIdx]; 
+        ctx.beginPath();
+        let playerOffSetX = 0;
+        let playerOffSetY = 0;
+        ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
+    
+        switch(direction) {
+            
+            case 37:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"37");
+                break;
+    
+            case 38:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"38");
+                break;
+    
+            case 39:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"39");
+                break;
+    
+            case 40:
+                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"40");
+                break;
+    
+    
+    
+            default:
+            //hero.reset(0)
+               // hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], lastDirection, true);
+        }
+        ctx.closePath();
+    } else if (powerInState) {
         let powersOffSetX = 0;
         let powersOffSetY = 0;
 
@@ -571,39 +603,10 @@ function drawGame() {
                 "underAttackLeft", false);
         }
 
-    } else if (direction) {
-        const { hero } = heros[characterIdx]; 
-        ctx.beginPath();
-        let playerOffSetX = 0;
-        let playerOffSetY = 0;
-        ctx.rect(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], player.dimentsions, player.dimentsions);
-    
-        switch(direction) {
-            
-            case 37:
-                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"37");
-                break;
-    
-            case 38:
-                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"38");
-                break;
-    
-            case 39:
-                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"39");
-                break;
-    
-            case 40:
-                hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"40");
-                break;
-    
-    
-    
-            default:
-            //hero.reset(0)
-               // hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], lastDirection, true);
-        }
-        ctx.closePath();
-    } else {
+    } else  {
+        // if none of the above 
+        // simply show the standing sprite
+        // in the last direction we moved
         const { hero } = heros[characterIdx];
         hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
     }
