@@ -404,16 +404,16 @@ function drawGame() {
             if (characterState.powerInState) {
                 let powersOffSetX = 0;
                 let powersOffSetY = 0;
-
+                
                 switch(powersKeys[characterState.powerInState]) {
                     case 0: {
-                        powersOffSetX = -34;
-                        powersOffSetY = -22;
+                        powersOffSetX = - 18;
+                        powersOffSetY = - 8;
                         break;
                     }
                     case 1: {
-                        powersOffSetX = -32;
-                        powersOffSetY = -10;
+                        powersOffSetX = - 16;
+                        powersOffSetY = 5;
                         break;
                     }
                 }
@@ -442,6 +442,7 @@ function drawGame() {
                 default:
                     break;
                 }
+
             } else if (characterState.fightMoveInState) {
                 
                 let fightingOffSetX = 0;
@@ -511,12 +512,12 @@ function drawGame() {
                 }
 
             } else {
+                // if none of the above 
+                // simply show the standing sprite
+                // in the last direction we moved
                 hero.run(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1],characterState.lastDirection, true);
             }
-            
-
             ctx.closePath();
-
         }
      }
 
@@ -531,13 +532,13 @@ function drawGame() {
 
         switch(powersKeys[powerInState]) {
             case 0: {
-                powersOffSetX = -34;
-                powersOffSetY = -22;
+                powersOffSetX = - 18;
+                powersOffSetY = - 8;
                 break;
             }
             case 1: {
-                powersOffSetX = -32;
-                powersOffSetY = -10;
+                powersOffSetX = - 16;
+                powersOffSetY = 5;
                 break;
             }
         }
@@ -572,14 +573,11 @@ function drawGame() {
             case 40:
                 hero.run(viewport.offset[0] + player.position[0] + playerOffSetX, viewport.offset[1] + player.position[1] + playerOffSetY,"40");
                 break;
-    
-    
-    
+
             default:
-            //hero.reset(0)
-               // hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1], lastDirection, true);
+                break;
         }
-        ctx.closePath();
+
     } else if (fightMoveInState) {
 
         let fightingOffSetX = 0;
@@ -655,12 +653,7 @@ function drawGame() {
         const { hero } = heros[characterIdx];
         hero.run(viewport.offset[0] + player.position[0], viewport.offset[1] + player.position[1],lastDirection, true);
     }
-
-
-   // if (!underAttack && !fightMoveInState) {
-
-   // }
-
+    ctx.closePath();
 
 
 
