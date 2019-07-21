@@ -40,17 +40,17 @@ function Player(id, position, characterState) {
   this.characterState = characterState;
 }
 
-function Monster(id, position, monsterState, monsterCharacterId, row, col) {
+function Monster(id, position, monsterState, monsterCharacterId, tileTo) {
   this.id = id;
   this.position = position;
   this.monsterState = monsterState;
   this.monsterCharacterId = monsterCharacterId;
-  this.row = row;
-  this.col = col;
+  this.tileTo = tileTo;
+
 }
 ////
 function monstersInit(monsters) {
-  console.log("init monsters")
+
   for (let i = 0; i < 5; i++) {
     const monsterState = {
       monsterDirectionKeyDown: {
@@ -62,7 +62,7 @@ function monstersInit(monsters) {
       directionMonster:"40", 
       lastDirectionMonster:"40", 
     }
-    const monster = new Monster(i, [45, 45], monsterState, 1, 1, 1)
+    const monster = new Monster(i, [45, 45], monsterState, 1, [1,1])
     monsters[i] = monster;
   }
 
@@ -106,7 +106,7 @@ function moveMonster(i) {
 
 function heartBeat() {
   if (!isObjEmpty(players)) {
-    console.log("monsters", Object.keys(monsters).length)
+    
     io.sockets.emit("heartbeat", { players, monsters, monstersKilled })
   }
 }
@@ -122,6 +122,7 @@ io.on('connection', socket => {
   socket.on("start", data => {
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
+    console.log("monsters on start", monsters)
     socket.emit("start", { monsters });
    // console.log("monsters on start", monsters)
   });

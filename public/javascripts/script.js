@@ -169,12 +169,12 @@ function isObjEmpty(obj) {
   }
   
 
-function toIndex(row, col) {
+function toIndex(x, y) {
     /**
-     ** helper to calculate the index based on the [row, col]
+     ** helper to calculate the index based on the [x, y]
      */
     
-    return (col * mapW) + row;
+    return (y * mapW) + x;
     
 }
 
@@ -228,8 +228,8 @@ function drawGame() {
         frameCount = 1;
         underAttack = false;
         for (const i in monsters) {
-            if (monsters[i].row === player.tileTo[0] && 
-                monsters[i].col === player.tileTo[1]) {
+            if (monsters[i].tileTo[0] === player.tileTo[0] && 
+                monsters[i].tileTo[1] === player.tileTo[1]) {
                 
                 underAttack = true;
             } 
@@ -250,10 +250,10 @@ function drawGame() {
                 console.log("====================================")
 
 
-                console.log("monsters[i].col", monsters[i].col)
-                console.log("monsters[i].row - 1", monsters[i].row - 1)
-                if (monsters[i].row - 1 === player.tileTo[0] && // monster and player on same row
-                    monsters[i].col  === player.tileTo[1] && // monster is right to player
+                console.log("monsters[i].tileTo[1]", monsters[i].tileTo[1])
+                console.log("monsters[i].tileTo[0] - 1", monsters[i].tileTo[0] - 1)
+                if (monsters[i].tileTo[0] - 1 === player.tileTo[0] && // monster and player on same x
+                    monsters[i].tileTo[1]  === player.tileTo[1] && // monster is right to player
                     lastDirection === "39" // and direction is to the right
                     ) {
                         monstersKilled[i] = monsters[i];
@@ -264,13 +264,7 @@ function drawGame() {
 
 
 
-            // if (monsters[i].row === player.tileTo[0] &&
-            //     monsters[i].col === player.tileTo[1] &&
-            //     fightMoveInState) {
-            //         monstersKilled[i] = monsters[i];
-            //         delete monsters[i];
-            //         console.log(monstersKilled)
-            //     }
+
         }
     } else {
         frameCount++;
@@ -278,7 +272,7 @@ function drawGame() {
 
     // if we not moving now
     if (!player.processMovment(currentFrameTime)) {
-        // based on the key pressed set the new [row, col] values
+        // based on the key pressed set the new [x, y] values
         if (directionKeyDown[38] && player.tileFrom[1] > 0) {
             if (safeAreas[gameMap[toIndex(player.tileFrom[0], player.tileFrom[1] - 1)]]) {
                 // up
@@ -330,7 +324,7 @@ function drawGame() {
                 const { monsterState: { monsterDirectionKeyDown } , monster } = monsters[i];
                 if (!monster.processMovment(currentFrameTime)) {
     
-                    // based on the key pressed set the new [row, col] values
+                    // based on the key pressed set the new [x, y] values
                     if (monsterDirectionKeyDown[38] && monster.tileFrom[1] > 0) {
                         if (safeAreas[gameMap[toIndex(monster.tileFrom[0], monster.tileFrom[1] - 1)]]) {
                             // up
@@ -763,8 +757,7 @@ function drawGame() {
                 position: monsters[monster].monster.position,
                 monsterState: monsters[monster].monsterState,
                 monsterCharacterId: monsters[monster].monsterCharacterId,
-                row: monsters[monster].monster.tileTo[0],
-                col: monsters[monster].monster.tileTo[1],
+                tileTo:monsters[monster].monster.tileTo
             }
         }
 
@@ -815,20 +808,20 @@ function randomColor() {
 
 
 
-    let rowCol = randomSpawn();
-    let row = rowCol[0];
-    let col = rowCol[1];
+    let xy = randomSpawn();
+    let x = xy[0];
+    let y = xy[1];
 
 
 
-    while (gameMap[toIndex(row, col)] !== 1) {
-        rowCol = randomSpawn()
-        row = randomSpawn()[0];
-        col = randomSpawn()[1];
+    while (gameMap[toIndex(x, y)] !== 1) {
+        xy = randomSpawn()
+        x = randomSpawn()[0];
+        y = randomSpawn()[1];
     }
 
     // new player init
-    player = new Character(row, col);
+    player = new Character(x, y);
     socket = io.connect("http://localhost:3000");
     characterIdx = Math.floor(Math.random() * 5).toString();
 
@@ -933,8 +926,7 @@ function randomColor() {
                     monsters[m].monsterState = monster.monsterState
                     monsters[m].monster.position = monster.position
                     monsters[m].monsterCharacterId = monster.monsterCharacterId
-                    monsters[m].row = monster.row
-                    monsters[m].col = monster.col
+                    monsters[m].tileTo = monster.tileTo
                     monsters[m].id = monster.id
                 } 
             }
@@ -977,7 +969,7 @@ function randomColor() {
             if (data.monsters.hasOwnProperty(i)) {
                 
                 const element = data.monsters[i];
-                monster = new Character(data.monsters[i].row, data.monsters[i].col);
+                monster = new Character(data.monsters[i].tileTo[0], data.monsters[i].tileTo[1]);
                 monster.deleyMove = 600;
                 let monsterAnim;
                 monsterAnim = new Sprite("../images/monster-" + 1 + ".png" , 3, 8);
@@ -996,14 +988,14 @@ function randomColor() {
                     monster,
                     monsterState: data.monsters[i].monsterState,
                     id: data.monsters[i].id,
-                    row: data.monsters[i].row,
-                    col: data.monsters[i].col,
+                    tileTo: data.monsters[i].tileTo,
                     monsterCharacterId: data.monsters[i].monsterCharacterId,
                     position: data.monsters[i].position
                     
                 }
             }
         }
+        console.log("monsters", monsters)
         started = true;
 
         
