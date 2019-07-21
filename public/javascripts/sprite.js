@@ -18,10 +18,13 @@ class Sprite {
         this.ctx = ctx
         this.img = new Image()
         this.img.src = this.path;
+
         this.width = this.img.width;
         this.height = this.img.height;
         this.frameHeight = Math.floor(this.height / this.totRows);
         this.frameWidth = Math.floor(this.width / this.totCols);
+
+
     }
 
     // animate(name, duration, row /* 0 based */) {
@@ -103,7 +106,9 @@ class Sprite {
         // console.log("anim.frames[this.next];", anim.frames[this.next])
         // console.log("this.next", this.next)
         // console.log("anim.length - 1", anim.frames.length - 1)
-
+        if (this.path.includes("spritexb-")) {
+            // console.log(this.next)
+        }
         if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x - 15, y - 40, this.frameWidth, this.frameHeight );
@@ -119,6 +124,7 @@ class Sprite {
     }
 
     reset() {
+        console.log("reset")
         this.next = 0
     }
 }

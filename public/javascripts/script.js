@@ -1,5 +1,6 @@
 
 
+
 const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 40, tileH = 40;
 const viewport = new Viewport(tileW, tileH)
@@ -9,10 +10,12 @@ let keyDownPressedTime; // when key was pressed
 let keyUpPressedTime; // when key was up
 let player; // my player (Character object)
 
+let stats; // for my stats 
+
 let started = false; // if game started
 let players = []; // array of players in the game
 let monsters = {}; // object of monsters in the game
-//let monstersKilled = {} // object will monsters killed that need to respawn
+
 let socket; // socket instance
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0; // frames count
 let lastFrameTime = 0; // last frame time in ms
@@ -69,6 +72,85 @@ const powersKeyDown = {
 const fightKeyDown = {
     81: false
 }
+
+
+class Stats {
+    constructor() {
+        this.life = 100;
+        this.mana = 100;
+        this.exp = 100;
+        this.ctx = null;
+        this.lifeWidth = this.life * 0.01 ;
+        this.manaWidth = this.mana * 0.01 ;
+        this.expWidth = this.exp * 0.01;
+        this.frame;
+        this.stats;
+    }
+
+    load(ctx) {
+        this.frame = new Image()
+        this.stats = new Image()
+        this.ctx = ctx;
+        this.stats.src = "../images/ui_stats.png"
+        this.frame.src = "../images/ui_frame.png"
+
+        // return new Promise((resolve, reject) => {
+        //     stats.onload = function() {
+        //         this.frame.onload = resolve;
+        //     }
+        // });
+
+    }
+
+    drawFrame() {
+      ctx.drawImage(this.frame, 10, 10, this.frame.width, this.frame.height)
+    }
+
+    decrease(name, value) {
+        this[name] = this.name - value;
+        this[`${name}Width`] = this[`${name}Width`] - value
+    }
+
+    increase(name, value) {
+        this[name] = this.name + value;
+        this[`${name}Width`] = this[`${name}Width`] + value
+    }
+
+    drawLife() {
+        ctx.drawImage(
+            this.stats, 0, 0, 
+            this.stats.width, 
+            16, 82, 18 ,
+            this.stats.width * this.lifeWidth, 
+            16)
+    }
+
+    drawMana() {
+        ctx.drawImage(
+            this.stats, 0, 32, 
+            this.stats.width, 
+            16, 82, 50 ,
+            this.stats.width * this.manaWidth, 
+            16)
+    }
+
+    drawExp() {
+        ctx.drawImage(
+            this.stats, 0, 20, 
+            this.stats.width, 
+            16, 82, 38 ,
+            this.stats.width * this.expWidth, 
+            16)
+    }
+
+    draw() {
+        this.drawFrame()
+        this.drawMana()
+        this.drawLife()
+        this.drawExp()
+    }
+}
+
 
 class Character {
    constructor(x, y) {
@@ -222,16 +304,18 @@ function drawGame() {
     };
 
     if (sec !== currentSecond) { 
-        console.log(player.tileTo)
+        
         currentSecond = sec; 
         framesLastSecond = frameCount;
         frameCount = 1;
         underAttack = false;
         for (const i in monsters) {
             if (monsters[i].tileTo[0] === player.tileTo[0] && 
-                monsters[i].tileTo[1] === player.tileTo[1]) {
+                monsters[i].tileTo[1] === player.tileTo[1] && !monsters[i].isDead) {
                 
                 underAttack = true;
+                stats.decrease("life", 0.1)
+                console.log(stats.lifeWidth)
             } 
 
 
@@ -272,6 +356,8 @@ function drawGame() {
         frameCount++;
     }
 
+  
+
     // if we not moving now
     if (!player.processMovment(currentFrameTime)) {
         // based on the key pressed set the new [x, y] values
@@ -280,7 +366,7 @@ function drawGame() {
                 // up
                 player.tileTo[1] -= 1;
             } else {
-                direction = null;
+                //direction = null;
             }
 
         } 
@@ -290,7 +376,7 @@ function drawGame() {
                 // down
                 player.tileTo[1] += 1;
             } else {
-                direction = null;
+                //direction = null;
             }
         } 
 
@@ -299,7 +385,7 @@ function drawGame() {
                 // right
                 player.tileTo[0] -= 1;
             } else {
-                direction = null;
+                //direction = null;
             }
         } 
 
@@ -308,7 +394,7 @@ function drawGame() {
                 // left
                 player.tileTo[0] += 1;
             } else {
-                direction = null;
+               // direction = null;
             }
         }
 
@@ -764,7 +850,7 @@ function drawGame() {
                 isDead:monsters[monster].isDead
             }
 
-            console.log("monsters[monster].isDead on move", monsters[monster].isDead)
+         
         }
 
     }
@@ -796,9 +882,19 @@ function drawGame() {
     
 
 
+
     ctx.fillStyle = "#ff0000"
-    ctx.fillText("FPS:" + framesLastSecond, 10, 20);
+    ctx.fillText("FPS:" + framesLastSecond, ctx.canvas.width - 70, ctx.canvas.height - 20);
     lastFrameTime = currentFrameTime;
+
+
+    stats.draw()
+    // ctx.beginPath()
+    // ctx.fillStyle = "#ff0000"
+    // ctx.fillRect(20, 20, 40, 10);
+    // ctx.closePath()
+
+
     requestAnimationFrame(drawGame);
 }
 
@@ -810,7 +906,7 @@ function randomColor() {
     return '#'+Math.floor(Math.random()*16777215).toString(16);
 }
 
-(function() {
+(async function() {
     
 
 
@@ -829,6 +925,8 @@ function randomColor() {
 
     // new player init
     player = new Character(x, y);
+    stats = new Stats();
+    stats.load(ctx)
     socket = io.connect("http://localhost:3000");
     characterIdx = Math.floor(Math.random() * 5).toString();
 
@@ -840,22 +938,23 @@ function randomColor() {
      * @param {String} direction default direction for the animation
      * @param {String} lastDirection default last direction for the animation
      */
-    function initAnimations(arrToPushAnimationTo, idx, direction, lastDirection) {
+    async function initAnimations(arrToPushAnimationTo, idx, direction, lastDirection) {
         let hero;
         hero = new Sprite("../images/spritexb-" + idx + ".png" , 13, 21);
         hero.load(ctx);
-        hero.animate("40", 100, 10, 0, 9); // down
-        hero.animate("37", 100,  9, 0, 9); // left 
-        hero.animate("39", 100, 11, 0, 9); // right 
-        hero.animate("38", 100,  8, 0, 9); // up
-
+        console.log("loaded")
+        hero.animate("40", 50, 10, 1, 9); // down
+        hero.animate("37", 50,  9, 1, 9); // left 
+        hero.animate("39", 50, 11, 1, 9); // right 
+        hero.animate("38", 50,  8, 1, 9); // up
+        console.log("hero", hero)
         switch (idx) {
             case 0:
                 // spear 
-                hero.animate("81"   , 100, 5, 0, 8); // q (fight - left)
-                hero.animate("811"  , 100, 7, 0, 8); // q (fight - right)
-                hero.animate("8111" , 100, 4, 0, 8); // q (fight - up)
-                hero.animate("81111", 100, 6, 0, 8); // q (fight - dowm)
+                hero.animate("81"   , 100, 5, 3, 8); // q (fight - left)
+                hero.animate("811"  , 100, 7, 3, 8); // q (fight - right)
+                hero.animate("8111" , 100, 4, 3, 8); // q (fight - up)
+                hero.animate("81111", 100, 6, 3, 8); // q (fight - dowm)
             break;
 
             case 1:
@@ -1003,7 +1102,7 @@ function randomColor() {
                 }
             }
         }
-        console.log("monsters", monsters)
+        
         started = true;
 
         
@@ -1030,6 +1129,7 @@ function randomColor() {
 
     
     window.addEventListener("keydown", e => {
+
         console.log(e.keyCode)
 
         // powers keys
@@ -1039,6 +1139,7 @@ function randomColor() {
 
 
         if (e.keyCode >= 37 && e.keyCode <= 40 && !fightMoveInState) { 
+            console.log("direction", direction)
             // {!fightMoveInState} wont allow walk and fight togeaher
             // remember if left or right was lasrt direction
             if (e.keyCode === 37 || e.keyCode === 39) {
@@ -1054,22 +1155,21 @@ function randomColor() {
                 lastDirection = e.keyCode.toString();
             }
 
-            // reset all key pressed except the current one
-            // (seems that we dont need it)
-            
-            // for (const key in directionKeyDown) {
-            //     if (key !== e.keyCode.toString()) {
-            //         directionKeyDown[key] = false;
-            //     }
-            // }
+            // reset all key pressed except the current one            
+            for (const key in directionKeyDown) {
+                if (key !== e.keyCode.toString()) {
+                    directionKeyDown[key] = false;
+                }
+            }
         }
 
         // speed up
         if (e.keyCode === 32) {
             player.deleyMove = 200;
             for (const key in heros[characterIdx].hero.animations) {
-                heros[characterIdx].hero.animations[key].duration = 50;
+                heros[characterIdx].hero.animations[key].duration = 20;
             }
+            console.log("direction", direction)
         }
 
         // fighting keys
@@ -1087,13 +1187,15 @@ function randomColor() {
     });
 
     window.addEventListener("keyup", e => {
+        const { hero } = heros[characterIdx]; 
+        hero.reset();
         if (e.keyCode >= 37 && e.keyCode <= 40) {
             directionKeyDown[e.keyCode] = false;
         }
         if (e.keyCode === 32) {
             player.deleyMove = 400;
             for (const key in heros[characterIdx].hero.animations) {
-                heros[characterIdx].hero.animations[key].duration = 100;
+                heros[characterIdx].hero.animations[key].duration = 50;
             }
         }
         
@@ -1104,9 +1206,6 @@ function randomColor() {
         if (powersKeys[e.keyCode] || powersKeys[e.keyCode] === 0) {
             powerInState = "";
         }
-
-        
-
     });
 
 
