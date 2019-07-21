@@ -27,6 +27,7 @@ var io = require('socket.io')(server);
 
 let players = {}
 let monsters = {}
+let monstersKilled = {}
 
 
 function isObjEmpty(obj) {
@@ -47,7 +48,7 @@ function Monster(id, position, monsterState, monsterCharacterId, row, col) {
   this.row = row;
   this.col = col;
 }
-
+////
 function monstersInit(monsters) {
   console.log("init monsters")
   for (let i = 0; i < 5; i++) {
@@ -64,7 +65,7 @@ function monstersInit(monsters) {
     const monster = new Monster(i, [45, 45], monsterState, 1, 1, 1)
     monsters[i] = monster;
   }
-  console.log(monsters)
+
 }
 
 
@@ -72,7 +73,6 @@ function monstersInitMovment(monsters) {
   console.log("monster init movment")
   for (const m in monsters) {
     if (monsters.hasOwnProperty(m)) {
-      const monster = monsters[m];
       moveMonster(m)
     }
   }
@@ -88,7 +88,7 @@ function randomIntFromInterval(min,max) {
 
 function moveMonster(i) {
   setInterval(() => {
-    
+    if (monsters[i]) {
       const randomDirection = randomIntFromInterval(37, 40);
       monsters[i].monsterState.monsterDirectionKeyDown[randomDirection] = true;
       monsters[i].monsterState.directionMonster = randomDirection;
@@ -99,12 +99,15 @@ function moveMonster(i) {
             monsters[i].monsterState.monsterDirectionKeyDown[key] = false;
           }
       }
+    }
+
   }, 1000)
 }
 
 function heartBeat() {
   if (!isObjEmpty(players)) {
-    io.sockets.emit("heartbeat", { players, monsters })
+    console.log("monsters", Object.keys(monsters).length)
+    io.sockets.emit("heartbeat", { players, monsters, monstersKilled })
   }
 }
 
@@ -128,9 +131,21 @@ io.on('connection', socket => {
     if (players[data.id]) {
       players[data.id].position = data.position;
       players[data.id].characterState = data.characterState;
+      
+
+      // updating the monsters that needs to respawn
+      for (const i in data.monstersKilled) {
+        if (data.monstersKilled.hasOwnProperty(i)) {
+          const monster = data.monstersKilled[i];
+          monstersKilled[i] = monster;
+        }
+      }
+
+
     }
 
-    monsters = data.monsters
+    monsters = data.monsters;
+  //  console.log("monsters", Object.keys(monsters).length)
   });
 
   socket.on('disconnect', () => {

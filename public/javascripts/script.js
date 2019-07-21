@@ -12,6 +12,7 @@ let player; // my player (Character object)
 let started = false; // if game started
 let players = []; // array of players in the game
 let monsters = {}; // object of monsters in the game
+let monstersKilled = {} // object will monsters killed that need to respawn
 let socket; // socket instance
 let currentSecond = 0, frameCount = 0, framesLastSecond = 0; // frames count
 let lastFrameTime = 0; // last frame time in ms
@@ -226,13 +227,20 @@ function drawGame() {
         frameCount = 1;
         underAttack = false;
         for (const i in monsters) {
-            if (monsters[i].row === player.tileTo[0] && monsters[i].col === player.tileTo[1]) {
-                console.log("under attack")
+            if (monsters[i].row === player.tileTo[0] && 
+                monsters[i].col === player.tileTo[1]) {
+                
                 underAttack = true;
             } 
+            if (monsters[i].row === player.tileTo[0] &&
+                monsters[i].col === player.tileTo[1] &&
+                fightMoveInState) {
+                    monstersKilled[i] = monsters[i];
+                    delete monsters[i];
+                    console.log(monstersKilled)
+                }
         }
     } else {
-
         frameCount++;
     }
 
@@ -499,7 +507,7 @@ function drawGame() {
                
                 
                 if (characterState.lastDirectionLeftRight === 37) {
-                    console.log("lastDirectionLeftRight", characterState.lastDirectionLeftRight)
+                  
                     hero.run(
                         viewport.offset[0] + players[key].position[0]  + fightingOffSetX, 
                         viewport.offset[1] + players[key].position[1]  + fightingOffSetY, 
@@ -548,8 +556,8 @@ function drawGame() {
 
     } 
 
-    console.log("direction", direction)
-    console.log("powerInState", powerInState)
+    
+    
     if (direction) {
 
         const { hero } = heros[characterIdx]; 
@@ -637,7 +645,7 @@ function drawGame() {
         const { hero } = heros[characterIdx];
         
         if (lastDirectionLeftRight === 37) {
-            console.log("lastDirectionLeftRight", lastDirectionLeftRight)
+       
             hero.run(
                 viewport.offset[0] + player.position[0] + fightingOffSetX, 
                 viewport.offset[1] + player.position[1] + fightingOffSetY, 
@@ -743,9 +751,12 @@ function drawGame() {
                     powerInState,
                     lastDirectionLeftRight,
                     fightMoveInState,
-                    underAttack
+                    underAttack,
+                    row: player.tileTo[0],
+                    col: player.tileTo[1]
                 },
-                monsters: monstersOnMove
+                monsters: monstersOnMove,
+                monstersKilled
             });
         }
 
@@ -879,16 +890,21 @@ function randomColor() {
         
         if (started) {
             players = data.players;
+            
             for (const m in data.monsters) {
-        
-                const monster = data.monsters[m];
-                monsters[m].monsterState = monster.monsterState
-                monsters[m].monster.position = monster.position
-                monsters[m].monsterCharacterId = monster.monsterCharacterId
-                monsters[m].row = monster.row
-                monsters[m].col = monster.col
-                monsters[m].id = monster.id
-                
+                // deleting monster that has been killed from client
+                if (data.monstersKilled[m]) {
+                    delete monsters[m];
+                }
+                if (monsters[m]) {
+                    const monster = data.monsters[m];
+                    monsters[m].monsterState = monster.monsterState
+                    monsters[m].monster.position = monster.position
+                    monsters[m].monsterCharacterId = monster.monsterCharacterId
+                    monsters[m].row = monster.row
+                    monsters[m].col = monster.col
+                    monsters[m].id = monster.id
+                } 
             }
         }
         
