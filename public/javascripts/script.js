@@ -2,9 +2,14 @@
 
 
 const ctx = document.getElementById("canvas").getContext("2d");
-let tileW = 40, tileH = 40;
+let tileW = 32, tileH = 32;
 const viewport = new Viewport(tileW, tileH)
 let mapW = 20, mapH = 20; // width and height of map
+
+// tiles
+let grass;
+let lightGrass;
+let waterfall;
 
 let keyDownPressedTime; // when key was pressed
 let keyUpPressedTime; // when key was up
@@ -277,8 +282,8 @@ const gameMap = [
 	0, 1, 2, 2, 2, 2, 1, 2, 1, 1, 4, 1, 1, 1, 1, 1, 3, 2, 1, 0,
 	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4,
 	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0,
-	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0,
-	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 1, 0,
+	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 2, 1, 0,
 	0, 3, 2, 3, 4, 4, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
 	0, 3, 2, 3, 4, 1, 3, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
 	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
@@ -476,7 +481,8 @@ function drawGame() {
     
     for (let y = viewport.startTile[1]; y <= viewport.endTile[1]; y++) {
         for (let x = viewport.startTile[0]; x <= viewport.endTile[0]; x++) {
-            switch(gameMap[((y*mapW) + x)]) {
+            const currentIdxVal = gameMap[((y*mapW) + x)] 
+            switch(currentIdxVal) {
                 case 0: 
                     ctx.fillStyle = "#999";
                     break;
@@ -498,12 +504,26 @@ function drawGame() {
             /**
              ** Drawing tiles
              */
-            ctx.fillRect(
-                viewport.offset[0] + x * tileW, 
-                viewport.offset[1] + y * tileH, 
-                tileW, 
-                tileH
-            );
+            if (currentIdxVal === 1) {
+                ctx.drawImage(lightGrass, viewport.offset[0] + x * tileW, viewport.offset[1] + y * tileH)
+                
+            } else if (currentIdxVal === 3) {
+                ctx.drawImage(grass, viewport.offset[0] + x * tileW, viewport.offset[1] + y * tileH)
+            } else if (currentIdxVal === 4) {
+                waterfall.run(
+                    viewport.offset[0] + x * tileW + 15, 
+                    viewport.offset[1] + y * tileH + 40, 
+                    "waterfall")
+                console.log("waterfall", waterfall)
+            } else {
+                ctx.fillRect(
+                    viewport.offset[0] + x * tileW, 
+                    viewport.offset[1] + y * tileH, 
+                    tileW, 
+                    tileH
+                );
+            }
+
         }
     }
 
@@ -930,6 +950,15 @@ function randomColor() {
     socket = io.connect("http://localhost:3000");
     characterIdx = Math.floor(Math.random() * 5).toString();
 
+
+    grass = new Image()
+    lightGrass = new Image()
+    grass.src = "../images/32x32_grass.png"
+    lightGrass.src = "../images/32x32_light_grass.png"
+
+    waterfall = new Sprite("../images/32x32_water.png", 4, 1)
+    waterfall.load(ctx)
+    waterfall.animate("waterfall", 800, 0, 0 , 3)
 
     /**
      * 
