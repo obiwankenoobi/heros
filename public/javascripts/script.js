@@ -2,8 +2,8 @@
 
 
 (async function() {
-
-const ctx = document.getElementById("canvas").getContext("2d");
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d");
 let tileW = 32, tileH = 32;
 
 let mapW = 20, mapH = 20; // width and height of map
@@ -14,11 +14,6 @@ let grass;
 let lightGrass;
 let waterfallImg;
 
-
-
-
-let keyDownPressedTime; // when key was pressed
-let keyUpPressedTime; // when key was up
 let player; // my player (Character object)
 
 let stats; // for my stats 
@@ -95,6 +90,29 @@ const fightKeyDown = {
     81: false
 };
 
+const gameMap = [
+	0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 2, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 1, 4, 4, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 0,
+	0, 2, 3, 1, 1, 4, 4, 1, 2, 3, 3, 2, 1, 1, 2, 1, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 1, 0,
+	0, 1, 1, 1, 1, 2, 3, 2, 1, 1, 4, 1, 1, 1, 1, 3, 3, 2, 1, 0,
+	0, 1, 2, 2, 2, 2, 1, 2, 1, 1, 4, 1, 1, 1, 1, 1, 3, 2, 1, 0,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0,
+	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 3, 2, 3, 4, 1, 3, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
+	0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 4, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+];
+
 // loading images
 
 async function loadImages() {
@@ -115,7 +133,7 @@ async function loadImages() {
         for (let idx = 0; idx < characters.length; idx++) {
             charactersImagesLoaded.push(await loadImageAsync("../images/spritexb-" + idx + ".png"))
         }
-        console.log("loaded images")
+        
         
     } catch (error) {
         alert("clouldnt load images");
@@ -220,7 +238,7 @@ class Stats {
     decrease(name, value) {
         this[name] = this[name] - value;
         this[`${name}Width`] = this.statsWidth * (this[name] / this[`max${name}`]);
-        console.log("this.life", this.life)
+        
     }
 
     increase(name, value) {
@@ -387,30 +405,74 @@ function toIndex(x, y) {
 }
 
 
+class Chat {
+    constructor(socket) {
+        this.messages = [];
+        this.socket = socket;
+    }
+
+    newMessage(message, container) {
+        this.messages.push(message);
+        const p = document.createElement("p");
+        p.style.fontSize = 14 + "px"
+        p.style.margin = 0 + "px"
+        message.id === socket.id.slice(0, 5) ? p.style.color = "red" : null;
+        const txt = document.createTextNode(message.id + ": " + message.text);
+        p.appendChild(txt);
+        container.appendChild(p);
+    }
+
+    initChat() {
+        const chatDiv = document.createElement("div");
+        const inputText = document.createElement("input");
+        const inputTextConatinar = document.createElement("div");
+        const messagesWindow = document.createElement("div");
+        const sendBtn = document.createElement("button");
+        sendBtn.innerHTML = "Send"; 
+        sendBtn.onclick = () => {
+            console.log(inputText.value)
+            socket.emit("message", inputText.value)
+            //this.newMessage(socket.id.slice(0, 5) + ": " + inputText.value, messagesWindow)
+            inputText.value = ""
+        }
+
+        messagesWindow.style.backgroundColor = "white";
+        messagesWindow.style.width = "100%";
+        messagesWindow.style.height = "70px";
+        messagesWindow.style.overflow = "scroll";
+    
+        inputText.setAttribute("type", "text");
+        inputText.style.width = canvas.width - 15 + "px";
+    
+        
+        inputTextConatinar.appendChild(inputText);
+        inputTextConatinar.appendChild(sendBtn);
+        inputTextConatinar.style.display = "flex";
+        inputTextConatinar.style.width = "100%";
+        inputTextConatinar.style.flexDirection = "row"
+
+    
+        chatDiv.style.border = "5px solid black";
+        chatDiv.style.display = "flex";
+        chatDiv.style.flexDirection = "column"
+        chatDiv.style.width = canvas.width - 10 + "px";
+        chatDiv.style.height = 100 + "px";
+        chatDiv.style.marginTop = - 4 + "px";
+        chatDiv.style.backgroundColor = "black";
+    
 
 
-const gameMap = [
-	0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 2, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
-	0, 2, 3, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
-	0, 2, 3, 1, 4, 4, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 0,
-	0, 2, 3, 1, 1, 4, 4, 1, 2, 3, 3, 2, 1, 1, 2, 1, 0, 0, 0, 0,
-	0, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0,
-	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
-	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
-	0, 1, 1, 1, 1, 2, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 1, 0,
-	0, 1, 1, 1, 1, 2, 3, 2, 1, 1, 4, 1, 1, 1, 1, 3, 3, 2, 1, 0,
-	0, 1, 2, 2, 2, 2, 1, 2, 1, 1, 4, 1, 1, 1, 1, 1, 3, 2, 1, 0,
-	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4,
-	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0,
-	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 0,
-	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 2, 1, 0,
-	0, 3, 2, 3, 4, 4, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
-	0, 3, 2, 3, 4, 1, 3, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
-	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
-	0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 4, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-];
+        chatDiv.appendChild(messagesWindow);
+        chatDiv.appendChild(inputTextConatinar);
+    
+        document.querySelector("body").appendChild(chatDiv);
+
+
+        socket.on("message", (message) => this.newMessage(message, messagesWindow));
+
+    }
+}
+
 
 function randomIntFromInterval(min,max) {
     return Math.floor(Math.random()*(max-min+1)+min);
@@ -419,9 +481,8 @@ function randomIntFromInterval(min,max) {
 
 const viewport = new Viewport(tileW, tileH)
 await loadImages()
-
 function drawGame() {
-    console.log("drawing game")
+    
     const sec = Math.floor(Date.now() / 1000); // counting seconds
     const currentFrameTime = Date.now();
     const timeElapsed = currentFrameTime - lastFrameTime;
@@ -449,7 +510,7 @@ function drawGame() {
 
 
 
-            if (fightMoveInState) {
+            if (fightMoveInState && !monsters[i].isDead) {
                 if (
                     // monsteer from ours right
                     (monsters[i].tileTo[0] - 1 === player.tileTo[0] && // monster one tile right to us
@@ -469,8 +530,7 @@ function drawGame() {
                     // monster form our bottom
                     (monsters[i].tileTo[0]  === player.tileTo[0] && // monster one tile left to us
                         monsters[i].tileTo[1] - 1 === player.tileTo[1] && // monster is right to player
-                        lastDirection === "40") 
-                    ) {
+                        lastDirection === "40")) {
                        // monstersKilled[i] = monsters[i];
                         monsters[i].isDead = true;
                         stats.increase("exp", 8)
@@ -1001,7 +1061,7 @@ function drawGame() {
 
    // if (monstersmonsters.length) {
         if (started) {
-            console.log("moving")
+            
             socket.emit("move", { 
                 position: player.position, 
                 id: socket.id, 
@@ -1023,22 +1083,11 @@ function drawGame() {
         }
 
         
-    
-
-
-
     ctx.fillStyle = "#ff0000"
-    //ctx.fillText("FPS:" + framesLastSecond, ctx.canvas.width - 70, ctx.canvas.height - 20);
     lastFrameTime = currentFrameTime;
 
 
     stats.draw()
-    // ctx.beginPath()
-    // ctx.fillStyle = "#ff0000"
-    // ctx.fillRect(20, 20, 40, 10);
-    // ctx.closePath()
-
-
     requestAnimationFrame(drawGame);
 }
 
@@ -1070,19 +1119,15 @@ function randomColor() {
     // new player init
     player = new Character(x, y);
     stats = new Stats();
-    stats.load(ctx)
+    stats.load(ctx);
     socket = io.connect("http://localhost:3000");
+    const chat = new Chat();
+    chat.initChat(socket);
     characterIdx = Math.floor(Math.random() * 5).toString();
 
-
-    // grass = new Image()
-    // lightGrass = new Image()
-    // grass.src = "../images/32x32_grass.png"
-    // lightGrass.src = "../images/32x32_light_grass.png"
-    console.log("waterfallImg", waterfallImg)
-    waterfall = new Sprite(waterfallImg, 4, 1)
-    waterfall.load(ctx)
-    waterfall.animate("waterfall", 800, 0, 0 , 3)
+    waterfall = new Sprite(waterfallImg, 4, 1);
+    waterfall.load(ctx);
+    waterfall.animate("waterfall", 800, 0, 0 , 3);
 
     /**
      * 
@@ -1197,8 +1242,6 @@ function randomColor() {
 
 
 
-    
-
     function createNewPowersAnim(arrOfHeros, idx, name, powersCols) {
         let power;
         power = new Sprite(powersImagesLoaded[idx], powersCols, 1);
@@ -1214,8 +1257,6 @@ function randomColor() {
      */
     createNewPowersAnim(herosPowersOnline, 0, "69", 25)
     createNewPowersAnim(herosPowersOnline, 1, "82", 20)
-
-
 
 
     /**
@@ -1293,7 +1334,7 @@ function randomColor() {
 
 
         if (e.keyCode >= 37 && e.keyCode <= 40 && !fightMoveInState) { 
-            console.log("direction", direction)
+            
             // {!fightMoveInState} wont allow walk and fight togeaher
             // remember if left or right was lasrt direction
             if (e.keyCode === 37 || e.keyCode === 39) {

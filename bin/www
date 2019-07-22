@@ -25,9 +25,10 @@ var io = require('socket.io')(server);
 
 
 
-let players = {}
-let monsters = {}
-let monstersKilled = {}
+let players = {};
+let monsters = {};
+let monstersKilled = {};
+let messages = [];
 
 
 function isObjEmpty(obj) {
@@ -140,6 +141,15 @@ io.on('connection', socket => {
     socket.emit("start", { monsters });
     console.log(players)
   });
+
+
+  socket.on("message", message => {
+    const messageObj = { text:message, id:socket.id.slice(0, 5) }
+    messages.push(messageObj)
+    io.emit("message", messageObj);
+    console.log(messages)
+  })
+
 
   socket.on("move", data => {
     //console.log("data.monster", data.monster)
