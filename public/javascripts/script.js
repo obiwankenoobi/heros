@@ -81,13 +81,23 @@ const fightKeyDown = {
 
 class Stats {
     constructor() {
-        this.life = 100;
-        this.mana = 100;
-        this.exp = 100;
+        this.level = 1;
+
+        this.statsWidth = 51;
+        
+        this.life = 51;
+        this.maxlife = 102;
+
+        this.mana = 51;
+        this.maxmana = 51;
+
+        this.exp = 20;
+        this.maxexp = 51;
+
         this.ctx = null;
-        this.lifeWidth = this.life * 0.01 ;
-        this.manaWidth = this.mana * 0.01 ;
-        this.expWidth = this.exp * 0.01;
+        this.lifeWidth = this.statsWidth * (this.life / this.maxlife) ;
+        this.manaWidth = this.statsWidth * (this.mana / this. maxmana)  ;
+        this.expWidth = this.statsWidth * (this.exp / this. maxexp) ;
         this.frame;
         this.stats;
     }
@@ -112,13 +122,29 @@ class Stats {
     }
 
     decrease(name, value) {
-        this[name] = this.name - value;
-        this[`${name}Width`] = this[`${name}Width`] - value
+        this[name] = this[name] - value;
+        this[`${name}Width`] = this.statsWidth * (this[name] / this[`max${name}`]);
+        console.log("this.life", this.life)
     }
 
     increase(name, value) {
-        this[name] = this.name + value;
-        this[`${name}Width`] = this[`${name}Width`] + value
+
+        this[name] = this[name] + value;
+       
+     
+
+        if (name === "exp") {
+            // level up
+            if (this.exp >= this.maxexp) {
+                this[`maxexp`] *= 2;
+                this[`maxlife`] *= 1.2;
+                this[`maxmana`] *= 1.2;
+                this.life = this[`maxlife`];
+           }
+        }
+        console.log("this.maxexp", this.maxexp)
+        console.log("this.exp", this.exp)
+        this[`${name}Width`] = this.statsWidth * (this[name] / this[`max${name}`]);
     }
 
     drawLife() {
@@ -126,16 +152,17 @@ class Stats {
             this.stats, 0, 0, 
             this.stats.width, 
             4, 46, 14 ,
-            this.stats.width * this.lifeWidth, 
+            this.lifeWidth, 
             4)
     }
 
     drawMana() {
+        
         ctx.drawImage(
             this.stats, 0, 10, 
             this.stats.width, 
             4, 46, 24 ,
-            this.stats.width * this.manaWidth, 
+            this.manaWidth, 
             4)
     }
 
@@ -144,7 +171,7 @@ class Stats {
             this.stats, 0, 20, 
             this.stats.width, 
             4, 46, 34 ,
-            this.stats.width * this.expWidth, 
+            this.expWidth, 
             4)
     }
 
@@ -319,8 +346,8 @@ function drawGame() {
                 monsters[i].tileTo[1] === player.tileTo[1] && !monsters[i].isDead) {
                 
                 underAttack = true;
-                stats.decrease("life", 0.1)
-                console.log(stats.lifeWidth)
+                stats.decrease("life", 4)
+                
             } 
 
 
@@ -349,7 +376,7 @@ function drawGame() {
                     ) {
                        // monstersKilled[i] = monsters[i];
                         monsters[i].isDead = true;
-                    
+                        stats.increase("exp", 8)
                     }
             }
 
@@ -514,7 +541,7 @@ function drawGame() {
                     viewport.offset[0] + x * tileW + 15, 
                     viewport.offset[1] + y * tileH + 40, 
                     "waterfall")
-                console.log("waterfall", waterfall)
+                
             } else {
                 ctx.fillRect(
                     viewport.offset[0] + x * tileW, 
@@ -971,12 +998,12 @@ function randomColor() {
         let hero;
         hero = new Sprite("../images/spritexb-" + idx + ".png" , 13, 21);
         hero.load(ctx);
-        console.log("loaded")
+        
         hero.animate("40", 50, 10, 1, 9); // down
         hero.animate("37", 50,  9, 1, 9); // left 
         hero.animate("39", 50, 11, 1, 9); // right 
         hero.animate("38", 50,  8, 1, 9); // up
-        console.log("hero", hero)
+        
         switch (idx) {
             case 0:
                 // spear 
