@@ -34,10 +34,7 @@ class Sprite {
         let yEnd = this.frameHeight * row + this.frameHeight;
   
         
-        console.log("name", name)
-        
         for (let i = startAtCol; i < endAtCol; i++) {
-            console.log(i, {xStart, xEnd})
             frames.push({ xStart, yStart, xEnd, yEnd })
             xStart = xEnd;
             xEnd = this.frameWidth * (i + 1) + this.frameWidth

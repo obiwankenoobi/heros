@@ -135,10 +135,15 @@ setInterval(respawn, 1000 * 10);
 io.on('connection', socket => {
     
   socket.on("start", data => {
+    console.log("messages on start", messages)
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
-    
-    socket.emit("start", { monsters });
+    const messagesToReturn = 
+      messages.length > 20 ? 
+      messages.slice(messages.length - 20, messages.length - 1) : 
+      messages
+      
+    socket.emit("start", { monsters, messages:messagesToReturn  });
     console.log(players)
   });
 

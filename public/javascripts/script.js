@@ -411,7 +411,7 @@ class Chat {
         this.socket = socket;
     }
 
-    newMessage(message, container) {
+    newMessage(message) {
         this.messages.push(message);
         const p = document.createElement("p");
         p.style.fontSize = 14 + "px"
@@ -419,7 +419,14 @@ class Chat {
         message.id === socket.id.slice(0, 5) ? p.style.color = "red" : null;
         const txt = document.createTextNode(message.id + ": " + message.text);
         p.appendChild(txt);
-        container.appendChild(p);
+        this.container.appendChild(p);
+    }
+
+    getMessages(messages) {
+        for (let i = 0; i < messages.length; i++) {
+            this.newMessage(messages[i], this.container)          
+        }
+        console.log("messages", messages)
     }
 
     initChat() {
@@ -427,6 +434,7 @@ class Chat {
         const inputText = document.createElement("input");
         const inputTextConatinar = document.createElement("div");
         const messagesWindow = document.createElement("div");
+        this.container = messagesWindow;
         const sendBtn = document.createElement("button");
         sendBtn.innerHTML = "Send"; 
         sendBtn.onclick = () => {
@@ -468,7 +476,7 @@ class Chat {
         document.querySelector("body").appendChild(chatDiv);
 
 
-        socket.on("message", (message) => this.newMessage(message, messagesWindow));
+        socket.on("message", (message) => this.newMessage(message));
 
     }
 }
@@ -1266,7 +1274,7 @@ function randomColor() {
     createNewPowersAnim(herosPowers, 1, "82", 20)
 
     socket.on("start", data => {
-
+        chat.getMessages(data.messages);
         for (const i in data.monsters) {
             if (data.monsters.hasOwnProperty(i)) {
                 
