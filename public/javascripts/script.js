@@ -125,27 +125,27 @@ class Stats {
         ctx.drawImage(
             this.stats, 0, 0, 
             this.stats.width, 
-            16, 46, 14 ,
+            4, 46, 14 ,
             this.stats.width * this.lifeWidth, 
-            16)
+            4)
     }
 
     drawMana() {
         ctx.drawImage(
-            this.stats, 0, 32, 
+            this.stats, 0, 10, 
             this.stats.width, 
-            16, 46, 50 ,
+            4, 46, 24 ,
             this.stats.width * this.manaWidth, 
-            16)
+            4)
     }
 
     drawExp() {
         ctx.drawImage(
             this.stats, 0, 20, 
             this.stats.width, 
-            16, 46, 34 ,
+            4, 46, 34 ,
             this.stats.width * this.expWidth, 
-            16)
+            4)
     }
 
     draw() {
