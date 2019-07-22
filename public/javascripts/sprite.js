@@ -1,12 +1,13 @@
 class Sprite {
-    constructor(path, totCols, totRows) {
-        this.path = path;
+    constructor(img, totCols, totRows) {
+        console.log("img", img)
+        //this.path = path;
         this.totCols = totCols;
         this.totRows = totRows;
         this.animations = {};
         this.width = null;
         this.height = null;
-        this.img = null;
+        this.img = img;
         this.frameHeight = null;
         this.frameWidth = null;
         this.ctx = null;
@@ -16,8 +17,8 @@ class Sprite {
 
     load(ctx) {
         this.ctx = ctx
-        this.img = new Image()
-        this.img.src = this.path;
+        // this.img = new Image()
+        // this.img.src = this.path;
 
         this.width = this.img.width;
         this.height = this.img.height;
@@ -27,24 +28,6 @@ class Sprite {
 
     }
 
-    // animate(name, duration, row /* 0 based */) {
-    //     let frames = [];
- 
-    //     let xStart = 0;
-    //     let yStart = row * this.frameHeight;
-    //     let xEnd = Math.floor(this.width / this.totCols);
-    //     let yEnd = Math.floor((this.height / this.totRows) + this.frameHeight);
-
-    //     for (let i = 1; i <= this.totCols; i++) {
-    //         frames.push({ xStart, yStart, xEnd, yEnd })
-    //         xStart = xEnd;
-    //         xEnd = this.frameWidth * i + this.frameWidth
-    //     }
-    //     this.animations[name] = {
-    //         duration,
-    //         frames
-    //     };
-    // }
 
     animate(name, duration, row, startAtCol = 0, endAtCol = this.totCols) {
 
@@ -76,7 +59,7 @@ class Sprite {
 
         console.log("name", name)
         console.log("frames", frames)
-        console.log("path", this.path)
+        //console.log("path", this.path)
         console.log("=======================")
         console.log("=======================")
         console.log("=======================")
@@ -106,9 +89,9 @@ class Sprite {
         // console.log("anim.frames[this.next];", anim.frames[this.next])
         // console.log("this.next", this.next)
         // console.log("anim.length - 1", anim.frames.length - 1)
-        if (this.path.includes("spritexb-")) {
-            // console.log(this.next)
-        }
+        // if (this.path.includes("spritexb-")) {
+        //     // console.log(this.next)
+        // }
         if (this.next >= anim.frames.length) { this.next = 0; }
         const { xStart, yStart } = anim.frames[this.next];
         this.ctx.drawImage(this.img, xStart, yStart, this.frameWidth, this.frameHeight, x - 15, y - 40, this.frameWidth, this.frameHeight );

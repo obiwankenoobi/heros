@@ -1,15 +1,21 @@
 
 
 
+(async function() {
+
 const ctx = document.getElementById("canvas").getContext("2d");
 let tileW = 32, tileH = 32;
-const viewport = new Viewport(tileW, tileH)
+
 let mapW = 20, mapH = 20; // width and height of map
 
-// tiles
+
+// tiles sprites
 let grass;
 let lightGrass;
-let waterfall;
+let waterfallImg;
+
+
+
 
 let keyDownPressedTime; // when key was pressed
 let keyUpPressedTime; // when key was up
@@ -52,11 +58,22 @@ const characters= [
 
 ];
 
+const charactersImagesLoaded = [];
 
 const powers = [
     "../images/power-0.png",
     "../images/power-1.png"
-]
+];
+
+const powersImagesLoaded = [];
+
+const monstersImages = [
+    "../images/monster-0.png",
+    "../images/monster-1.png",
+];
+
+const monstersImagesLoaded = [];
+
 
 const powersKeys = { 69:0, 82:1 }
 
@@ -76,7 +93,92 @@ const powersKeyDown = {
 
 const fightKeyDown = {
     81: false
+};
+
+// loading images
+
+async function loadImages() {
+    
+    try {
+        grass = await loadImageAsync("../images/32x32_grass.png");
+        lightGrass = await loadImageAsync("../images/32x32_light_grass.png");
+        waterfallImg = await loadImageAsync("../images/32x32_water.png") 
+
+        for (let idx = 0; idx < powers.length; idx++) {
+            powersImagesLoaded.push(await loadImageAsync("../images/power-" + idx + ".png"))
+        }
+
+        for (let idx = 0; idx < monstersImages.length; idx++) {
+            monstersImagesLoaded.push(await loadImageAsync("../images/monster-" + idx + ".png"))
+        }
+
+        for (let idx = 0; idx < characters.length; idx++) {
+            charactersImagesLoaded.push(await loadImageAsync("../images/spritexb-" + idx + ".png"))
+        }
+        console.log("loaded images")
+        
+    } catch (error) {
+        alert("clouldnt load images");
+        loadImages()
+    }
+
+};
+
+
+function loadImageAsync(path) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = path;
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+    });
 }
+
+
+class Viewport {
+    constructor(tileW, tileH) {
+        this.screen     = [0,0]; // canvas [width, height]
+        this.startTile  = [0,0]; // [row, col] of the starting tile to show
+        this.endTile    = [0,0]; // [row, col] of the ending tile to show
+        this.offset     = [0,0]; // offset to move [x, y]
+        this.tileW      = tileW;
+        this.tileH      = tileH;
+    }
+
+
+    update(px, py) {
+        /**
+         ** Formula to calculate the offset from the current position
+         */
+        this.offset[0] = Math.floor((this.screen[0] / 2) - px);
+        this.offset[1] = Math.floor((this.screen[1] / 2) - py);
+        /**
+         ** Calculating the index position of the tile falling under the dead center of the camera position
+         */
+        const tile = [
+            Math.floor(px / tileW),
+            Math.floor(py / tileH)
+        ];
+
+        /**
+         ** Formula to calculate the starting index to draw and the end index to draw
+         */
+        this.startTile[0] = tile[0] - 1 - Math.ceil((this.screen[0] / 2) / tileW);
+        this.startTile[1] = tile[1] - 1 - Math.ceil((this.screen[1] / 2) / tileH);
+
+        if (this.startTile[0] < 0) { this.startTile[0] = 0; }
+        if (this.startTile[1] < 0) { this.startTile[1] = 0; }
+
+        this.endTile[0] = tile[0] + 1 + Math.ceil((this.screen[0] / 2) / tileW)
+        this.endTile[1] = tile[1] + 1 + Math.ceil((this.screen[1] / 2) / tileH)
+
+        if (this.endTile[0] >= 0) { this.endTile[0] = mapW - 1; }
+        if (this.endTile[1] >= 0) { this.endTile[1] = mapH - 1; }
+    }
+}
+
+
+
 
 
 class Stats {
@@ -109,12 +211,6 @@ class Stats {
         this.stats.src = "../images/ui_stats-sm.png"
         this.frame.src = "../images/ui_frame-sm.png"
 
-        // return new Promise((resolve, reject) => {
-        //     stats.onload = function() {
-        //         this.frame.onload = resolve;
-        //     }
-        // });
-
     }
 
     drawFrame() {
@@ -142,8 +238,6 @@ class Stats {
                 this.life = this[`maxlife`];
            }
         }
-        console.log("this.maxexp", this.maxexp)
-        console.log("this.exp", this.exp)
         this[`${name}Width`] = this.statsWidth * (this[name] / this[`max${name}`]);
     }
 
@@ -323,8 +417,11 @@ function randomIntFromInterval(min,max) {
 }
 
 
-function drawGame() {
+const viewport = new Viewport(tileW, tileH)
+await loadImages()
 
+function drawGame() {
+    console.log("drawing game")
     const sec = Math.floor(Date.now() / 1000); // counting seconds
     const currentFrameTime = Date.now();
     const timeElapsed = currentFrameTime - lastFrameTime;
@@ -904,7 +1001,7 @@ function drawGame() {
 
    // if (monstersmonsters.length) {
         if (started) {
-            
+            console.log("moving")
             socket.emit("move", { 
                 position: player.position, 
                 id: socket.id, 
@@ -978,12 +1075,12 @@ function randomColor() {
     characterIdx = Math.floor(Math.random() * 5).toString();
 
 
-    grass = new Image()
-    lightGrass = new Image()
-    grass.src = "../images/32x32_grass.png"
-    lightGrass.src = "../images/32x32_light_grass.png"
-
-    waterfall = new Sprite("../images/32x32_water.png", 4, 1)
+    // grass = new Image()
+    // lightGrass = new Image()
+    // grass.src = "../images/32x32_grass.png"
+    // lightGrass.src = "../images/32x32_light_grass.png"
+    console.log("waterfallImg", waterfallImg)
+    waterfall = new Sprite(waterfallImg, 4, 1)
     waterfall.load(ctx)
     waterfall.animate("waterfall", 800, 0, 0 , 3)
 
@@ -996,7 +1093,8 @@ function randomColor() {
      */
     async function initAnimations(arrToPushAnimationTo, idx, direction, lastDirection) {
         let hero;
-        hero = new Sprite("../images/spritexb-" + idx + ".png" , 13, 21);
+        //hero = new Sprite("../images/spritexb-" + idx + ".png" , 13, 21);
+        hero = new Sprite(charactersImagesLoaded[idx], 13, 21);
         hero.load(ctx);
         
         hero.animate("40", 50, 10, 1, 9); // down
@@ -1103,7 +1201,7 @@ function randomColor() {
 
     function createNewPowersAnim(arrOfHeros, idx, name, powersCols) {
         let power;
-        power = new Sprite("../images/power-" + idx + ".png" , powersCols, 1);
+        power = new Sprite(powersImagesLoaded[idx], powersCols, 1);
         power.load(ctx);
         power.animate(name, 100, 0);
         arrOfHeros.push({ power });
@@ -1135,7 +1233,7 @@ function randomColor() {
                 monster = new Character(data.monsters[i].tileTo[0], data.monsters[i].tileTo[1]);
                 monster.deleyMove = 600;
                 let monsterAnim;
-                monsterAnim = new Sprite("../images/monster-" + 1 + ".png" , 3, 8);
+                monsterAnim = new Sprite(monstersImagesLoaded[1] , 3, 8);
         
                 monsterAnim.load(ctx);
                 monsterAnim.animate("40", 200, 0); // down
@@ -1272,4 +1370,6 @@ function randomColor() {
 
     requestAnimationFrame(drawGame);
     ctx.font = "bold 14pt sans-sarif";
+})()
+
 })()
