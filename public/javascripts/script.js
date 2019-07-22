@@ -96,8 +96,8 @@ class Stats {
         this.frame = new Image()
         this.stats = new Image()
         this.ctx = ctx;
-        this.stats.src = "../images/ui_stats.png"
-        this.frame.src = "../images/ui_frame.png"
+        this.stats.src = "../images/ui_stats-sm.png"
+        this.frame.src = "../images/ui_frame-sm.png"
 
         // return new Promise((resolve, reject) => {
         //     stats.onload = function() {
@@ -125,7 +125,7 @@ class Stats {
         ctx.drawImage(
             this.stats, 0, 0, 
             this.stats.width, 
-            16, 82, 18 ,
+            16, 46, 14 ,
             this.stats.width * this.lifeWidth, 
             16)
     }
@@ -134,7 +134,7 @@ class Stats {
         ctx.drawImage(
             this.stats, 0, 32, 
             this.stats.width, 
-            16, 82, 50 ,
+            16, 46, 50 ,
             this.stats.width * this.manaWidth, 
             16)
     }
@@ -143,7 +143,7 @@ class Stats {
         ctx.drawImage(
             this.stats, 0, 20, 
             this.stats.width, 
-            16, 82, 38 ,
+            16, 46, 34 ,
             this.stats.width * this.expWidth, 
             16)
     }
