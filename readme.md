@@ -10,6 +10,12 @@ Proof of concept for online rpg game built completely from scratch.
 * Basic colusion detection
 * Live chat
   
+## To play
+
+`q` to hit a monster (need to be one tile to any of it sides and you need to face it)
+`r || e` to use magic animation
+`arrow keys` to walk around
+ 
 Just a proof of concept so bugs are expected 🤩
 
 You can play around using the [link](https://herosworld.herokuapp.com/)
