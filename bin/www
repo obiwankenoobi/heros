@@ -142,13 +142,16 @@ io.on('connection', socket => {
       messages.length > 20 ? 
       messages.slice(messages.length - 20, messages.length - 1) : 
       messages
-      
+
     socket.emit("start", { monsters, messages:messagesToReturn  });
     console.log(players)
   });
 
 
   socket.on("message", message => {
+    
+    if (message.length > 144) return;
+
     const messageObj = { text:message, id:socket.id.slice(0, 5) }
     messages.push(messageObj)
     io.emit("message", messageObj);

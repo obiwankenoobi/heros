@@ -409,24 +409,29 @@ class Chat {
     constructor(socket) {
         this.messages = [];
         this.socket = socket;
+        this.sendBtn = null;
+        this.container = null;
     }
 
     newMessage(message) {
-        this.messages.push(message);
+        console.log("message")
+        if (!message.text) return;
         const p = document.createElement("p");
-        p.style.fontSize = 14 + "px"
-        p.style.margin = 0 + "px"
-        message.id === socket.id.slice(0, 5) ? p.style.color = "red" : null;
         const txt = document.createTextNode(message.id + ": " + message.text);
         p.appendChild(txt);
+
+        p.style.fontSize = 14 + "px";
+        p.style.margin = 0 + "px";
+        p.style.marginBottom = 3 + "px";
+        p.style.paddingLeft = 5 + "px";
+        p.style.paddingRight = 5 + "px";
+        message.id === socket.id.slice(0, 5) ? p.style.color = "red" : null;
+
         this.container.appendChild(p);
     }
 
     getMessages(messages) {
-        for (let i = 0; i < messages.length; i++) {
-            this.newMessage(messages[i], this.container)          
-        }
-        console.log("messages", messages)
+        messages.forEach(message => this.newMessage(message, this.container))
     }
 
     initChat() {
@@ -434,32 +439,31 @@ class Chat {
         const inputText = document.createElement("input");
         const inputTextConatinar = document.createElement("div");
         const messagesWindow = document.createElement("div");
-        this.container = messagesWindow;
         const sendBtn = document.createElement("button");
+        this.container = messagesWindow;
+        this.sendBtn = sendBtn;
         sendBtn.innerHTML = "Send"; 
         sendBtn.onclick = () => {
-            console.log(inputText.value)
-            socket.emit("message", inputText.value)
-            //this.newMessage(socket.id.slice(0, 5) + ": " + inputText.value, messagesWindow)
-            inputText.value = ""
+            socket.emit("message", inputText.value);
+            inputText.value = "";
         }
 
         messagesWindow.style.backgroundColor = "white";
         messagesWindow.style.width = "100%";
         messagesWindow.style.height = "70px";
         messagesWindow.style.overflow = "scroll";
-    
+
         inputText.setAttribute("type", "text");
+        inputText.setAttribute("maxlength", 144);
         inputText.style.width = canvas.width - 15 + "px";
+
     
-        
         inputTextConatinar.appendChild(inputText);
         inputTextConatinar.appendChild(sendBtn);
         inputTextConatinar.style.display = "flex";
         inputTextConatinar.style.width = "100%";
         inputTextConatinar.style.flexDirection = "row"
 
-    
         chatDiv.style.border = "5px solid black";
         chatDiv.style.display = "flex";
         chatDiv.style.flexDirection = "column"
@@ -468,16 +472,12 @@ class Chat {
         chatDiv.style.marginTop = - 4 + "px";
         chatDiv.style.backgroundColor = "black";
     
-
-
         chatDiv.appendChild(messagesWindow);
         chatDiv.appendChild(inputTextConatinar);
-    
+
         document.querySelector("body").appendChild(chatDiv);
 
-
         socket.on("message", (message) => this.newMessage(message));
-
     }
 }
 
@@ -728,6 +728,12 @@ function drawGame() {
      */    
     for (const key in players) {
         if (key !== socket.id) {
+
+            ctx.fillStyle = "#ff0000";
+            ctx.font = "14px Arial";
+            lastFrameTime = currentFrameTime;
+            ctx.fillText(key.slice(0, 5), players[key].position[0] + viewport.offset[0], players[key].position[1] + viewport.offset[1] - 40)
+
 
             ctx.beginPath()
             ctx.rect(viewport.offset[0] + players[key].position[0], viewport.offset[1] + players[key].position[1], player.dimentsions, player.dimentsions);
@@ -1091,11 +1097,14 @@ function drawGame() {
         }
 
         
-    ctx.fillStyle = "#ff0000"
+    ctx.fillStyle = "#ff0000";
+    ctx.font = "14px Arial";
     lastFrameTime = currentFrameTime;
-
-
-    stats.draw()
+    if (socket.id) {
+        ctx.fillText(socket.id.slice(0, 5), player.position[0] + viewport.offset[0], player.position[1] + viewport.offset[1] - 40)
+    }
+    
+    stats.draw();
     requestAnimationFrame(drawGame);
 }
 
@@ -1334,6 +1343,10 @@ function randomColor() {
     window.addEventListener("keydown", e => {
 
         console.log(e.keyCode)
+
+        if (e.keyCode === 13) {
+            chat.sendBtn.click();
+        }
 
         // powers keys
         if (powersKeys.hasOwnProperty(e.keyCode.toString())) {
