@@ -443,12 +443,19 @@ class Chat {
         this.container = messagesWindow;
         this.sendBtn = sendBtn;
         sendBtn.innerHTML = "Send"; 
+        sendBtn.style.height = 22 + "px"; 
+        sendBtn.style.marginTop = 5 + "px"
+        sendBtn.style.marginLeft = 5 + "px"
+        sendBtn.style.backgroundColor = "#333333"
+        sendBtn.style.borderColor = "#333333"
+        sendBtn.style.borderWidth = 0 + "px"
+        sendBtn.style.color = "white"
         sendBtn.onclick = () => {
             socket.emit("message", inputText.value);
             inputText.value = "";
         }
 
-        messagesWindow.style.backgroundColor = "white";
+        messagesWindow.style.backgroundColor = "#333333";
         messagesWindow.style.width = "100%";
         messagesWindow.style.height = "70px";
         messagesWindow.style.overflow = "scroll";
@@ -456,6 +463,11 @@ class Chat {
         inputText.setAttribute("type", "text");
         inputText.setAttribute("maxlength", 144);
         inputText.style.width = canvas.width - 15 + "px";
+        inputText.style.backgroundColor = "#333333"
+        inputText.style.borderColor = "#333333"
+        inputText.style.borderWidth = 0 + "px"
+        inputText.style.marginTop = 5 + "px"
+        inputText.style.height = 20 + "px"
 
     
         inputTextConatinar.appendChild(inputText);
