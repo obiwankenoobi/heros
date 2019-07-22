@@ -1028,7 +1028,7 @@ function drawGame() {
 
 
     ctx.fillStyle = "#ff0000"
-    ctx.fillText("FPS:" + framesLastSecond, ctx.canvas.width - 70, ctx.canvas.height - 20);
+    //ctx.fillText("FPS:" + framesLastSecond, ctx.canvas.width - 70, ctx.canvas.height - 20);
     lastFrameTime = currentFrameTime;
 
 
