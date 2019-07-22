@@ -132,13 +132,13 @@ setInterval(heartBeat, 1000 / 30);
 setInterval(respawn, 1000 * 10);
 
 io.on('connection', socket => {
-  
+    
   socket.on("start", data => {
     const player = new Player(socket.id, data.position, data.characterState);
     players[socket.id] = player;
     
     socket.emit("start", { monsters });
-   
+    console.log(players)
   });
 
   socket.on("move", data => {
